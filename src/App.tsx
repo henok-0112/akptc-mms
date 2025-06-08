@@ -12,6 +12,7 @@ import RegisterClient from "./components/RegisterClient";
 import RegisterMaterial from "./components/RegisterMaterial";
 import ClientDetail from "./components/ClientDetail";
 import MaterialDetail from "./components/MaterialDetail";
+import EditMaterial from "./components/EditMaterial";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,6 +52,10 @@ function App() {
               />
               <Route path="register" element={<RegisterClient />} />
               <Route path=":client/edit/:id" element={<EditClient />} />
+              <Route
+                path=":client/edit/material/:id"
+                element={<EditMaterial />}
+              />
               <Route
                 path="register/:client/material/:id"
                 element={<RegisterMaterial />}
