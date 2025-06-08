@@ -1,0 +1,34 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&display=swap");
+@import "tailwindcss";
+* {
+  box-sizing: border-box;
+}
+
+.hue-rotate {
+  animation: hue-rotate 5s ease-in-out infinite;
+}
+
+@keyframes hue-rotate {
+  0% {
+    filter: blur(50px) hue-rotate(0deg);
+  }
+  100% {
+    filter: blur(50px) hue-rotate(360deg);
+  }
+}
+
+::-webkit-scrollbar {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-white/50 rounded-2xl m-5;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-green-400/50 rounded-full border-3 border-white/50;
+}
+
+::-webkit-scrollbar-corner {
+  @apply rounded-2xl;
+}
