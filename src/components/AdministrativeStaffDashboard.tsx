@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Table from "./Table";
-import { DangerButton, PrimaryLinkButton } from "./ui/Buttons";
+import { DangerButton, PrimaryButton, PrimaryLinkButton } from "./ui/Buttons";
 import AdministrativeStaffController from "../controllers/administrativeStaffController";
 import type { AdministrativeStaff } from "../types/administrativeStaff.type";
 import Loader from "./Loader";
@@ -12,17 +12,24 @@ import { ErrorToast, SuccessToast } from "./Toasts";
 import { useNavigate } from "react-router";
 import { TableBodyRow } from "./TableRow";
 import TableData from "./TableData";
+import logo from "../assets/logo.png";
+import { useOverlay } from "../contexts/OverlayContext";
+import QrCode from "react-qr-code";
+import { useTranslation } from "react-i18next";
 
 const AdministrativeStaffDashboard = () => {
   const [administrativeStaffs, setAdministrativeStaffs] = useState<
     Array<AdministrativeStaff>
   >([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const { setOverlayChildren, setOpen, setLoadingOverlay, loadingOverlay } =
+    useOverlay();
 
   const handleGetAll = async () => {
     try {
@@ -61,6 +68,35 @@ const AdministrativeStaffDashboard = () => {
     }
   };
 
+  const handleGenerateQR = (id: number, name: string) => {
+    setOpen(true);
+    setLoadingOverlay(true);
+    setOverlayChildren(
+      <div className="bg-white overflow-hidden min-h-100 rounded-2xl ">
+        <div className="bg-green-600 p-4 mb-4 gap-2 flex items-center space-between">
+          <img src={logo} className="w-15" />
+          <p className="text-white text-xl font-bold">
+            Akaki Polytechnic Collage ID
+          </p>
+        </div>
+        <div className="flex gap-4 flex-col justify-center items-center">
+          <QrCode
+            enableBackground="false"
+            size={200}
+            level="H"
+            bgColor="transparent"
+            fgColor="#00a746"
+            value={id.toString()}
+          />
+          <p className="text-2xl">
+            <span className="text-[#00a746]">Name:</span> {name}
+          </p>
+        </div>
+      </div>
+    );
+    setLoadingOverlay(false);
+  };
+
   useEffect(() => {
     handleGetAll();
   }, []);
@@ -74,14 +110,14 @@ const AdministrativeStaffDashboard = () => {
   return (
     <div className="flex items-center flex-col gap-2 justify-center">
       <h1 className="text-3xl font-bold text-white w-full">
-        Administrative Staffs
+        {t("administrativeStaff")}
       </h1>
       <div className="w-140 my-3">
         <PrimaryTextField
           id="search"
           onBlur={() => {}}
           type="text"
-          placeholder="Search administrative staffs here......."
+          placeholder={t("search", { field: t("administrativeStaffSm") })}
           onChange={(event) => {
             setSearch(event.target.value);
           }}
@@ -92,46 +128,112 @@ const AdministrativeStaffDashboard = () => {
       ) : administrativeStaffs.length === 0 ? (
         <div className="w-full min-h-full flex-1 flex flex-col justify-center items-center">
           <p className="text-3xl">
-            There are no administrative staff registered!
+            {t("notFound", { field: t("administrativeStaffSm", { count: 2 }) })}
           </p>
-          <PrimaryLinkButton className="max-w-fit" link="/dashboard/create">
-            Register Clients
+          <PrimaryLinkButton className="max-w-fit" link="/dashboard/register">
+            {t("registerClient", { count: 2 })}
           </PrimaryLinkButton>
         </div>
       ) : (
         <>
           <Table
             headers={[
-              "No.",
-              "Name",
-              "Age",
-              "Gender",
-              "Phone Number",
-              "Subcity",
-              "District",
-              "Office",
-              "Job Responsibility",
-              "Actions",
+              t("no"),
+              t("name"),
+              t("age"),
+              t("gender"),
+              t("phoneNumber"),
+              t("subcity"),
+              t("district"),
+              t("office"),
+              t("jobResponsibility"),
+              t("actions"),
             ]}
             bodyData={administrativeStaffs?.map(
               (administrativeStaff, index) => (
-                <TableBodyRow
-                  key={index}
-                  onClick={() =>
-                    navigate(
-                      `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
-                    )
-                  }
-                >
-                  <TableData className="rounded-bl-2xl">{index + 1}</TableData>
-                  <TableData>{administrativeStaff.name}</TableData>
-                  <TableData>{administrativeStaff.age}</TableData>
-                  <TableData>{administrativeStaff.gender}</TableData>
-                  <TableData>{administrativeStaff.phoneNumber}</TableData>
-                  <TableData>{administrativeStaff.subcity}</TableData>
-                  <TableData>{administrativeStaff.district}</TableData>
-                  <TableData>{administrativeStaff.office}</TableData>
-                  <TableData>{administrativeStaff.jobResponsibility}</TableData>
+                <TableBodyRow key={index}>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                    className="rounded-bl-2xl"
+                  >
+                    {index + 1}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.name}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.age}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.gender}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.phoneNumber}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.subcity}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.district}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.office}
+                  </TableData>
+                  <TableData
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/administrative-staff/detail/${administrativeStaff.id}`
+                      )
+                    }
+                  >
+                    {administrativeStaff.jobResponsibility}
+                  </TableData>
                   <TableData
                     className={`
                     rounded-br-2xl  
@@ -141,12 +243,12 @@ const AdministrativeStaffDashboard = () => {
                       <PrimaryLinkButton
                         link={`/dashboard/administrative-staff/edit/${administrativeStaff.id}`}
                       >
-                        Edit
+                        {t("edit")}
                       </PrimaryLinkButton>
                       <DangerButton
                         onClick={() => handleDelete(administrativeStaff.id)}
                       >
-                        Delete
+                        {t("delete")}
                       </DangerButton>
                     </div>
                   </TableData>

@@ -13,6 +13,9 @@ import RegisterMaterial from "./components/RegisterMaterial";
 import ClientDetail from "./components/ClientDetail";
 import MaterialDetail from "./components/MaterialDetail";
 import EditMaterial from "./components/EditMaterial";
+import TrainerDashboard from "./components/TrainerDashboard";
+import TraineeDashboard from "./components/TraineeDashboard";
+import GuestDashboard from "./components/GuestDashboard";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,6 +48,9 @@ function App() {
                 path="administrative-staff"
                 element={<AdministrativeStaffDashboard />}
               />
+              <Route path="trainer" element={<TrainerDashboard />} />
+              <Route path="trainee" element={<TraineeDashboard />} />
+              <Route path="guest" element={<GuestDashboard />} />
               <Route path=":client/detail/:id" element={<ClientDetail />} />
               <Route
                 path=":client/material/detail/:id"

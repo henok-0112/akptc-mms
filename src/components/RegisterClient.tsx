@@ -2,7 +2,7 @@ import { Controller, useForm } from "react-hook-form";
 import { PrimaryTextField } from "./TextFields";
 import { PrimaryButton, RadioButton } from "./ui/Buttons";
 import PrimaryDropDown from "./DropDown";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { ClientTypes, type RegisterClientForm } from "../types/client.type";
 import AdministrativeStaffController from "../controllers/administrativeStaffController";
@@ -15,6 +15,9 @@ import GuestController from "../controllers/guestController";
 import { useDebounce } from "use-debounce";
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router";
+import { FaCamera } from "react-icons/fa";
+import { useOverlay } from "../contexts/OverlayContext";
+import Webcam from "react-webcam";
 
 const RegisterClient = () => {
   const {
@@ -23,6 +26,7 @@ const RegisterClient = () => {
     handleSubmit,
     watch,
     control,
+    setValue,
     setError,
     clearErrors,
     formState: { errors },
@@ -30,9 +34,11 @@ const RegisterClient = () => {
   const clientType = watch("clientType");
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
+  const webcamRef = useRef<Webcam | null>(null);
 
   const [phoneExists, setPhoneExists] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(false);
+  const { setOverlayChildren, setOpen } = useOverlay();
   const handleRegister = async (data: RegisterClientForm) => {
     setLoading(true);
     if (phoneExists) {
@@ -49,6 +55,31 @@ const RegisterClient = () => {
         if (key === "clientType") {
           continue;
         }
+        if (clientType === ClientTypes.ADMINISTRATIVE_STAFF) {
+          if (key === "department" || key === "stream") {
+            continue;
+          }
+        } else if (clientType === ClientTypes.TRAINER) {
+          if (
+            key === "office" ||
+            key === "jobResponsibility" ||
+            key === "stream"
+          ) {
+            continue;
+          }
+        } else if (clientType === ClientTypes.TRAINEE) {
+          if (key === "office" || key === "jobResponsibility") {
+            continue;
+          }
+        } else if (clientType === ClientTypes.GUEST) {
+          if (
+            key === "department" ||
+            key === "stream" ||
+            key === "jobResponsibility"
+          ) {
+            continue;
+          }
+        }
         const value = data[key as keyof RegisterClientForm];
         if (value instanceof File) {
           formData.append("image", value);
@@ -63,7 +94,9 @@ const RegisterClient = () => {
           toast.success(
             <SuccessToast message="Administrative Staff registered successfully!" />
           );
-          navigate(`/dashboard/register/material/${response.data.id}`);
+          navigate(
+            `/dashboard/register/administrative-staff/material/${response.data.id}`
+          );
           reset();
         } else {
           toast.error(
@@ -76,6 +109,7 @@ const RegisterClient = () => {
           toast.success(
             <SuccessToast message="Trainer registered successfully!" />
           );
+          navigate(`/dashboard/register/trainer/material/${response.data.id}`);
           reset();
         } else {
           toast.error(
@@ -88,6 +122,7 @@ const RegisterClient = () => {
           toast.success(
             <SuccessToast message="Trainee registered successfully!" />
           );
+          navigate(`/dashboard/register/trainee/material/${response.data.id}`);
           reset();
         } else {
           toast.error(
@@ -100,6 +135,7 @@ const RegisterClient = () => {
           toast.success(
             <SuccessToast message="Guest registered successfully!" />
           );
+          navigate(`/dashboard/register/guest/material/${response.data.id}`);
           reset();
         } else {
           toast.error(
@@ -316,7 +352,7 @@ const RegisterClient = () => {
                     placeholder="Enter department here....."
                     id="department"
                     label="Department"
-                    {...register("office", {
+                    {...register("department", {
                       required: "Department is Required.",
                     })}
                     type="text"
@@ -371,7 +407,7 @@ const RegisterClient = () => {
                 ""
               )}
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 items-center">
               <p className="text-white text-2xl font-bold">Client Image</p>
               <Controller
                 name="image"
@@ -446,6 +482,53 @@ const RegisterClient = () => {
               {errors.image && (
                 <p className="text-red-500 ml-2">{errors.image.message}</p>
               )}
+              <PrimaryButton
+                type="button"
+                onClick={() => {
+                  setOpen(true);
+                  setOverlayChildren(
+                    <div className="flex flex-col items-center gap-2">
+                      <Webcam
+                        audio={false}
+                        ref={webcamRef}
+                        screenshotFormat="image/jpeg"
+                        videoConstraints={{ facingMode: "user" }}
+                        className="w-60 h-70 rounded-2xl object-cover object-center"
+                      />
+                      <PrimaryButton
+                        type="button"
+                        onClick={() => {
+                          if (webcamRef.current) {
+                            const imageSrc = webcamRef.current.getScreenshot();
+                            if (imageSrc) {
+                              fetch(imageSrc)
+                                .then((res) => res.blob())
+                                .then((blob) => {
+                                  const file = new File(
+                                    [blob],
+                                    "webcam_image.jpg",
+                                    { type: "image/jpeg" }
+                                  );
+                                  setImagePreview(URL.createObjectURL(file));
+                                  setValue("image", file, {
+                                    shouldValidate: true,
+                                  });
+                                  setOpen(false);
+                                });
+                            }
+                          }
+                        }}
+                      >
+                        Capture
+                      </PrimaryButton>
+                    </div>
+                  );
+                }}
+                className="flex gap-2 items-center justify-between max-w-fit"
+              >
+                <FaCamera />
+                Camera
+              </PrimaryButton>
             </div>
           </div>
           <PrimaryButton

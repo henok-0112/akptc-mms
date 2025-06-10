@@ -11,6 +11,9 @@ import Loader from "./Loader";
 import type { RegisterMaterialForm } from "../types/material.type";
 import { useNavigate, useParams } from "react-router";
 import { FaChevronLeft } from "react-icons/fa";
+import TrainerController from "../controllers/trainerController";
+import TraineeController from "../controllers/traineeController";
+import GuestController from "../controllers/guestController";
 
 const RegisterMaterial = () => {
   const {
@@ -45,9 +48,18 @@ const RegisterMaterial = () => {
       }
       formData.append("clientID", id as string);
 
-      const response = await AdministrativeStaffController.registerMaterial(
-        formData
-      );
+      let response;
+      if (client === "administrative-staff") {
+        response = await AdministrativeStaffController.registerMaterial(
+          formData
+        );
+      } else if (client === "trainer") {
+        response = await TrainerController.registerMaterial(formData);
+      } else if (client === "trainee") {
+        response = await TraineeController.registerMaterial(formData);
+      } else {
+        response = await GuestController.registerMaterial(formData);
+      }
       if (response.status === 201) {
         toast.success(
           <SuccessToast message="Material registered successfully!" />

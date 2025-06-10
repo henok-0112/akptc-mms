@@ -1,0 +1,10 @@
+export type Trainer = {
+  id: number;
+  name: string;
+  age: number;
+  gender: "male" | "female";
+  phoneNumber: number;
+  subcity: string;
+  district: string;
+  department: string;
+};

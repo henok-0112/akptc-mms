@@ -2,15 +2,20 @@ import { Controller, useForm } from "react-hook-form";
 import { PrimaryTextField } from "./TextFields";
 import { PrimaryButton } from "./ui/Buttons";
 import PrimaryDropDown from "./DropDown";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import AdministrativeStaffController from "../controllers/administrativeStaffController";
 import { toast } from "react-toastify";
 import { ErrorToast, SuccessToast } from "./Toasts";
 import Loader from "./Loader";
-import type { RegisterMaterialForm } from "../types/material.type";
+import type {
+  Material,
+  RegisterMaterialForm,
+  UpdateMaterialForm,
+} from "../types/material.type";
 import { useNavigate, useParams } from "react-router";
 import { FaChevronLeft } from "react-icons/fa";
+import MaterialController from "../controllers/materialController";
 
 const EditMaterial = () => {
   const {
@@ -24,35 +29,59 @@ const EditMaterial = () => {
 
   const { id, client } = useParams();
 
-  const [imagePreview, setImagePreview] =
-    useState<(File & { preview: string })[]>();
+  const [imagePreview, setImagePreview] = useState<
+    (File & { preview: string })[] | { preview: string }[]
+  >();
+
+  const [materialData, setMaterialData] = useState<Material>();
+
+  const fetchMaterial = async () => {
+    try {
+      const response = await MaterialController.get(Number(id));
+      setMaterialData(response.data);
+      const pictureUrl: Array<{ preview: string }> = [];
+      response.data.pictures.map((picture: { picturePath: string }) =>
+        pictureUrl.push({
+          preview: `http://localhost:3000/${picture.picturePath}`,
+        })
+      );
+      setImagePreview(pictureUrl);
+      const previousData: Material = {
+        ...response.data,
+      };
+      reset({
+        brand: previousData.brand,
+        model: previousData.model,
+        serialNumber: previousData.serialNumber,
+        type: previousData.type,
+        ownership: previousData.ownership,
+      });
+    } catch (error) {
+      toast.error(<ErrorToast message="Can not find material." />);
+      navigate("/dashboard");
+    }
+  };
 
   const [loading, setLoading] = useState<boolean>(false);
-  const handleRegister = async (data: RegisterMaterialForm) => {
+  const handleUpdate = async (data: UpdateMaterialForm) => {
     setLoading(true);
     try {
       const formData = new FormData();
 
       for (const key in data) {
-        const value = data[key as keyof RegisterMaterialForm];
-        if (key === "images") {
-          data.images.map((image) => {
-            formData.append("images", image);
-          });
-        } else {
-          formData.append(key, value as string);
-        }
+        const value = data[key as keyof UpdateMaterialForm];
+        formData.append(key, value as string);
       }
-      formData.append("clientID", id as string);
 
-      const response = await AdministrativeStaffController.registerMaterial(
-        formData
+      const response = await MaterialController.updateMaterial(
+        Number(id),
+        data
       );
-      if (response.status === 201) {
+      if (response.status === 200) {
         toast.success(
-          <SuccessToast message="Material registered successfully!" />
+          <SuccessToast message="Material updated successfully!" />
         );
-        reset();
+        navigate(-1);
       } else {
         toast.error(
           <ErrorToast message="Something went wrong, please try again" />
@@ -60,6 +89,7 @@ const EditMaterial = () => {
       }
       setLoading(false);
     } catch (error) {
+      console.log(error);
       toast.error(
         <ErrorToast message="Something went wrong, please try again" />
       );
@@ -67,9 +97,13 @@ const EditMaterial = () => {
     }
   };
 
+  useEffect(() => {
+    fetchMaterial();
+  }, []);
+
   return (
     <form
-      onSubmit={handleSubmit(handleRegister)}
+      onSubmit={handleSubmit(handleUpdate)}
       className="flex flex-col gap-3 max-w-full"
     >
       {loading ? (
@@ -168,91 +202,9 @@ const EditMaterial = () => {
                 <p className="text-red-500 ml-2">{errors.ownership.message}</p>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-white text-2xl font-bold">Material Images</p>
-              <Controller
-                name="images"
-                control={control}
-                rules={{ required: "Material Image is required." }}
-                render={({ field: { onChange, ...field } }) => {
-                  const onDrop = useCallback((acceptedFiles: File[]) => {
-                    setImagePreview(
-                      acceptedFiles.map((file) =>
-                        Object.assign(file, {
-                          preview: URL.createObjectURL(file),
-                        })
-                      )
-                    );
-                    onChange(acceptedFiles);
-                  }, []);
-                  const {
-                    getRootProps,
-                    getInputProps,
-                    isDragActive,
-                    isDragAccept,
-                    isDragReject,
-                  } = useDropzone({
-                    onDrop,
-                    multiple: true,
-                    accept: {
-                      "image/*": [],
-                    },
-                  });
-                  return (
-                    <div
-                      {...getRootProps()}
-                      className={`w-60 h-70 border-2  ${
-                        isDragActive
-                          ? isDragAccept
-                            ? "bg-green-400/50 border-green-500"
-                            : "bg-red-400/50 border-red-500"
-                          : "bg-white/30 border-white/50"
-                      } backdrop-blur-2xl shadow-lg cursor-pointer p-3 rounded-2xl  flex flex-col overflow-auto items-center  gap-2`}
-                    >
-                      <input
-                        {...getInputProps()}
-                        name={field.name}
-                        onBlur={field.onBlur}
-                        type="file"
-                      />
-                      {imagePreview ? (
-                        imagePreview.map((file, idx) => (
-                          <img
-                            key={idx}
-                            src={file.preview}
-                            className="w-full h-full rounded-xl object-cover object-center"
-                          />
-                        ))
-                      ) : (
-                        <>
-                          {isDragActive ? (
-                            isDragReject ? (
-                              <p className="text-xl text-center font-bold">
-                                Drop files here.....
-                              </p>
-                            ) : (
-                              <p className="text-xl text-center font-bold">
-                                Drop files here.....
-                              </p>
-                            )
-                          ) : (
-                            <p className="text-xl text-center font-bold">
-                              Drag and Drop files here.....
-                            </p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  );
-                }}
-              />
-              {errors.images && (
-                <p className="text-red-500 ml-2">{errors.images.message}</p>
-              )}
-            </div>
           </div>
           <PrimaryButton type="submit" className="w-min">
-            Register
+            Update
           </PrimaryButton>
         </>
       )}

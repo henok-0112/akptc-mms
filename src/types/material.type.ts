@@ -15,3 +15,11 @@ export type Material = {
   ownership: string;
   pictures: Array<{ picturePath: string }>;
 };
+
+export type UpdateMaterialForm = {
+  brand: string;
+  model: string;
+  serialNumber: string;
+  type: string;
+  ownership: string;
+};

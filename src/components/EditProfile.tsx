@@ -35,185 +35,59 @@ const EditClient = () => {
   const [clientType, setClientType] = useState<ClientTypes>(
     ClientTypes.ADMINISTRATIVE_STAFF
   );
-  const [clientData, setClientData] = useState<UpdateClientForm>();
+  const [userData, setUserData] = useState<UpdateClientForm>();
 
-  const fetchClient = async () => {
+  const fetchUser = async () => {
     try {
       let response;
-      if (client === "administrative-staff") {
-        response = await AdministrativeStaffController.get(Number(id));
-      } else if (client === "trainer") {
-        response = await TrainerController.get(Number(id));
-      } else if (client === "trainee") {
-        response = await TraineeController.get(Number(id));
-      } else {
-        response = await GuestController.get(Number(id));
-      }
-      setClientData(response.data);
+
+      setUserData(response.data);
       const pictureUrl = `http://localhost:3000/${response.data.picture.picturePath}`;
       setImagePreview(pictureUrl);
       const previousData = {
-        clientType:
-          client === "administrative-staff"
-            ? ClientTypes.ADMINISTRATIVE_STAFF
-            : client === "trainer"
-            ? ClientTypes.TRAINER
-            : client === "trainee"
-            ? ClientTypes.TRAINEE
-            : ClientTypes.GUEST,
         ...response.data,
       };
-      if (client === "administrative-staff") {
-        reset({
-          name: previousData.name,
-          age: previousData.age,
-          gender: previousData.gender,
-          clientType: ClientTypes.ADMINISTRATIVE_STAFF,
-          phoneNumber: previousData.phoneNumber,
-          district: previousData.district,
-          subcity: previousData.subcity,
-          office: previousData.office,
-          jobResponsibility: previousData.jobResponsibility,
-        });
-      } else if (client === "trainer") {
-        reset({
-          name: previousData.name,
-          age: previousData.age,
-          gender: previousData.gender,
-          clientType: ClientTypes.TRAINER,
-          phoneNumber: previousData.phoneNumber,
-          district: previousData.district,
-          subcity: previousData.subcity,
-          department: previousData.department,
-        });
-      } else if (client === "trainee") {
-        reset({
-          name: previousData.name,
-          age: previousData.age,
-          gender: previousData.gender,
-          clientType: ClientTypes.TRAINEE,
-          phoneNumber: previousData.phoneNumber,
-          district: previousData.district,
-          subcity: previousData.subcity,
-          department: previousData.department,
-          stream: previousData.stream,
-        });
-      } else if (client === "guest") {
-        reset({
-          name: previousData.name,
-          age: previousData.age,
-          gender: previousData.gender,
-          clientType: ClientTypes.GUEST,
-          phoneNumber: previousData.phoneNumber,
-          district: previousData.district,
-          subcity: previousData.subcity,
-          office: previousData.office,
-        });
-      }
+
+      reset({
+        name: previousData.name,
+        age: previousData.age,
+        gender: previousData.gender,
+        clientType: ClientTypes.GUEST,
+        phoneNumber: previousData.phoneNumber,
+        district: previousData.district,
+        subcity: previousData.subcity,
+        office: previousData.office,
+      });
     } catch (error) {
-      toast.error(<ErrorToast message="Can not find client." />);
+      toast.error(<ErrorToast message="Can not find user." />);
       navigate(-1);
     }
   };
 
   useEffect(() => {
-    if (isNaN(Number(id))) {
-      toast.error(<ErrorToast message="Id is invalid" />);
-      navigate(-1);
-    }
-    if (client === "administrative-staff") {
-      setClientType(ClientTypes.ADMINISTRATIVE_STAFF);
-    } else if (client === "trainer") {
-      setClientType(ClientTypes.TRAINER);
-    } else if (client === "trainee") {
-      setClientType(ClientTypes.TRAINEE);
-    } else if (client === "guest") {
-      setClientType(ClientTypes.GUEST);
-    }
-    fetchClient();
+    fetchUser();
   }, []);
 
-  const [phoneExists, setPhoneExists] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(false);
   const handleUpdate = async (data: UpdateClientForm) => {
     setLoading(true);
-    if (phoneExists) {
-      setError("phoneNumber", {
-        type: "manual",
-        message: "Phone number already exists.",
-      });
-      return;
-    }
+
     try {
-      const formData = new FormData();
+      const response = await AdministrativeStaffController.update(
+        Number(id),
+        data
+      );
 
-      for (const key in data) {
-        if (key === "clientType") {
-          continue;
-        }
-        const value = data[key as keyof UpdateClientForm];
-        if (value instanceof File) {
-          formData.append("image", value);
-        } else {
-          formData.append(key, value as any);
-        }
-      }
-
-      if (clientType === ClientTypes.ADMINISTRATIVE_STAFF) {
-        const response = await AdministrativeStaffController.update(
-          Number(id),
-          formData
+      if (response.status === 200) {
+        toast.success(
+          <SuccessToast message="Administrative Staff updated successfully!" />
         );
-
-        if (response.status === 200) {
-          toast.success(
-            <SuccessToast message="Administrative Staff updated successfully!" />
-          );
-          navigate("/dashboard/administrative-staff");
-          reset();
-        } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
-        }
-      } else if (clientType === ClientTypes.TRAINER) {
-        const response = await TrainerController.update(Number(id), formData);
-        console.log(formData.get("image"));
-        if (response.status === 200) {
-          toast.success(
-            <SuccessToast message="Trainer updated successfully!" />
-          );
-          navigate("/dashboard/trainer");
-          reset();
-        } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
-        }
-      } else if (clientType === ClientTypes.TRAINEE) {
-        const response = await TraineeController.update(Number(id), formData);
-        if (response.status === 200) {
-          toast.success(
-            <SuccessToast message="Trainee updated successfully!" />
-          );
-          navigate("/dashboard/trainee");
-          reset();
-        } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
-        }
-      } else if (clientType === ClientTypes.GUEST) {
-        const response = await GuestController.update(Number(id), formData);
-        if (response.status === 200) {
-          toast.success(<SuccessToast message="Guest updated successfully!" />);
-          navigate("/dashboard/guest");
-          reset();
-        } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
-        }
+        navigate("/dashboard/administrative-staff");
+        reset();
+      } else {
+        toast.error(
+          <ErrorToast message="Something went wrong, please try again" />
+        );
       }
 
       setLoading(false);
@@ -225,51 +99,6 @@ const EditClient = () => {
       setLoading(false);
     }
   };
-
-  const phone = watch("phoneNumber");
-  const [checkingPhone, setCheckingPhone] = useState<boolean>();
-  const [debouncePhone] = useDebounce(phone, 500);
-
-  useEffect(() => {
-    const handleCheckPhone = async () => {
-      if (!debouncePhone) return;
-
-      try {
-        setCheckingPhone(true);
-        const responseAdmin = await AdministrativeStaffController.checkPhone(
-          debouncePhone
-        );
-        const responseTrainer = await TrainerController.checkPhone(
-          debouncePhone
-        );
-        const responseTrainee = await TraineeController.checkPhone(
-          debouncePhone
-        );
-        const responseGuest = await GuestController.checkPhone(debouncePhone);
-        if (
-          (responseAdmin.data.exists ||
-            responseTrainer.data.exists ||
-            responseTrainee.data.exists ||
-            responseGuest.data.exists) &&
-          debouncePhone !== clientData?.phoneNumber
-        ) {
-          setError("phoneNumber", {
-            type: "manual",
-            message: "Phone number already exists.",
-          });
-          setPhoneExists(true);
-        } else {
-          clearErrors("phoneNumber");
-          setPhoneExists(false);
-        }
-      } catch (error) {
-      } finally {
-        setCheckingPhone(false);
-      }
-    };
-
-    handleCheckPhone();
-  }, [debouncePhone]);
 
   return (
     <form
@@ -300,64 +129,19 @@ const EditClient = () => {
                 <p className="text-red-500 ml-2">{errors.name.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter age here....."
-                id="age"
-                label="Age"
-                {...register("age", {
-                  required: "Age is Required.",
-                  validate: {
-                    isInteger: (value) =>
-                      Number.isInteger(Number(value)) ||
-                      "Age must be an integer.",
-                  },
-                })}
-                type="number"
-              />
-              {errors.age && (
-                <p className="text-red-500 ml-2">{errors.age.message}</p>
-              )}
-              <label className=" font-bold text-xl ml-5 text-white">
-                Gender
-              </label>
-              <div className="flex justify-around">
-                <RadioButton
-                  id="male"
-                  {...register("gender", { required: "Gender is Required." })}
-                  label="Male"
-                  value="male"
-                />
-                <RadioButton
-                  id="female"
-                  {...register("gender", { required: "Gender is Required." })}
-                  label="Female"
-                  value="female"
-                />
-              </div>
-              {errors.gender && (
-                <p className="text-red-500 ml-2">{errors.gender.message}</p>
-              )}
-              <PrimaryTextField
-                placeholder="Enter phone number here....."
-                id="phoneNumber"
-                label="Phone Number"
-                {...register("phoneNumber", {
-                  required: "Phone Number is Required.",
-                  validate: {
-                    exists: () => !phoneExists || "Phonenumber already exists.",
-                    isInteger: (value) =>
-                      Number.isInteger(Number(value)) ||
-                      "Phonenumber must be an integer.",
-                  },
+                placeholder="Enter username here....."
+                id="username"
+                label="Username"
+                {...register("username", {
+                  required: "Username is Required.",
                 })}
                 type="number"
               />
               {checkingPhone && (
                 <ClipLoader color="white" size={20} className="ml-2 mt-2" />
               )}
-              {errors.phoneNumber && (
-                <p className="text-red-500 ml-2">
-                  {errors.phoneNumber.message}
-                </p>
+              {errors.username && (
+                <p className="text-red-500 ml-2">{errors.username.message}</p>
               )}
               <PrimaryTextField
                 placeholder="Enter subcity here....."

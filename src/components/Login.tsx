@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { ErrorToast, SuccessToast } from "./Toasts";
 import { useAuth } from "../contexts/AuthContext";
 import Loader from "./Loader";
+import { useTranslation } from "react-i18next";
 
 type LoginForm = {
   username: string;
@@ -26,6 +27,8 @@ const Login = () => {
   const handlePasswordVisiblity = () => {
     setVisible(!visible);
   };
+
+  const { t, i18n } = useTranslation();
 
   const {
     register,
@@ -46,29 +49,14 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (error) {
-      if (isAxiosError(error)) {
-        toast.error(<ErrorToast message={error.response?.data.detail} />);
+      if (isAxiosError(error) && error.status === 403) {
+        toast.error(<ErrorToast message={t("invalidCredentials")} />);
       } else if (error instanceof Error) {
         toast.error(<ErrorToast message={error.message} />);
       } else {
-        toast.error(<ErrorToast message="Unknown error occured" />);
-      }
-    }
-  };
-  const refreshToken = async () => {
-    try {
-      const response = await refresh();
-      console.log(response);
-      if (response) {
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      if (isAxiosError(error)) {
-        toast.error(<ErrorToast message={error.response?.data.detail} />);
-      } else if (error instanceof Error) {
-        toast.error(<ErrorToast message={error.message} />);
-      } else {
-        toast.error(<ErrorToast message="Unknown error occured" />);
+        toast.error(
+          <ErrorToast message="Something went wrong, please try again!" />
+        );
       }
     }
   };
@@ -77,32 +65,35 @@ const Login = () => {
       navigate("/dashboard");
     }
   }, [user]);
+  useEffect(() => {
+    i18n.changeLanguage("om");
+  }, []);
 
   return loading ? (
     <Loader />
   ) : (
-    <FormContainer
-      alt="Akaki Polytechnic Collage Logo"
-      title="Login"
-      logo={Logo}
-    >
+    <FormContainer alt={t("akptcLogo")} title={t("login")} logo={Logo}>
       <form onSubmit={handleSubmit(handleLogin)}>
         <PrimaryTextField
-          placeholder="Enter username here....."
+          placeholder={t("input", { field: t("usernameSm") })}
           id="username"
-          label="Username"
-          {...register("username", { required: "Username is Required." })}
+          label={t("username")}
+          {...register("username", {
+            required: t("isRequired", { field: t("username") }),
+          })}
           type="text"
         />
         {errors.username && (
           <p className="text-red-500 ml-2">{errors.username.message}</p>
         )}
         <PrimaryTextField
-          placeholder="Enter password here....."
+          placeholder={t("input", { field: t("passwordSm") })}
           type={visible ? "text" : "password"}
           id="password"
-          {...register("password", { required: "Password is Required." })}
-          label="Password"
+          {...register("password", {
+            required: t("isRequired", { field: t("password") }),
+          })}
+          label={t("password")}
           suffixIcon={
             <Container
               onClick={handlePasswordVisiblity}
@@ -121,13 +112,13 @@ const Login = () => {
           <p className="text-red-500 ml-2">{errors.password.message}</p>
         )}
         <p className="my-2 ml-2 text-white">
-          Did you forget your password?{" "}
+          {t("forgetPasswordQ")}{" "}
           <Link to="/forgot-password" className="underline hover:text-black">
-            Reset Password
+            {t("resetPassword")}
           </Link>
         </p>
         <PrimaryButton type="submit" className="w-min">
-          Login
+          {t("login")}
         </PrimaryButton>
       </form>
     </FormContainer>

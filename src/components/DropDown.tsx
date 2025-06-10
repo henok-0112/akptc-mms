@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import Container from "./Container";
 
@@ -20,6 +20,12 @@ const PrimaryDropDown = forwardRef<HTMLButtonElement, TextFieldProps>(
     const handleOpen = () => {
       setOpen(!open);
     };
+
+    useEffect(() => {
+      if (value && value !== "") {
+        setDisplayText(value);
+      }
+    }, [value]);
 
     return (
       <div>

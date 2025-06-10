@@ -34,8 +34,8 @@ const MaterialDetail = () => {
     fetchAdministrativeStaff();
   }, []);
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-3 items-center">
+      <div className="flex items-center justify-between w-full">
         <PrimaryButton
           onClick={() => navigate(-1)}
           type="button"
@@ -45,7 +45,7 @@ const MaterialDetail = () => {
         </PrimaryButton>
         <h1 className="text-3xl text-white font-bold">Material Detail</h1>
       </div>
-      <Container className="p-4 max-w-fit">
+      <Container className="p-4 max-w-[700px]">
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           className="rounded-lg"
@@ -56,9 +56,9 @@ const MaterialDetail = () => {
           loop
         >
           {materialData?.pictures.map((picture, index) => (
-            <SwiperSlide key={index}>
+            <SwiperSlide key={index} className=" max-h-[350px]">
               <img
-                className="rounded-lg"
+                className="rounded-lg w-full h-full object-cover"
                 src={`http://localhost:3000/${picture.picturePath}`}
               />
             </SwiperSlide>
@@ -74,24 +74,24 @@ const MaterialDetail = () => {
       </Container>
       <Container className="p-4 max-w-fit">
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Brand:</p>
-          <p className="text-xl">{materialData?.brand}</p>
+          <p className="text-2xl font-bold ">Brand:</p>
+          <p className="text-2xl">{materialData?.brand}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Model:</p>
-          <p className="text-xl">{materialData?.model}</p>
+          <p className="text-2xl font-bold ">Model:</p>
+          <p className="text-2xl">{materialData?.model}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Serial Number:</p>
-          <p className="text-xl capitalize">{materialData?.serialNumber}</p>
+          <p className="text-2xl font-bold ">Serial Number:</p>
+          <p className="text-2xl capitalize">{materialData?.serialNumber}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Type:</p>
-          <p className="text-xl">{materialData?.type}</p>
+          <p className="text-2xl font-bold ">Type:</p>
+          <p className="text-2xl">{materialData?.type}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Ownership:</p>
-          <p className="text-xl">{materialData?.ownership}</p>
+          <p className="text-2xl font-bold ">Ownership:</p>
+          <p className="text-2xl">{materialData?.ownership}</p>
         </div>
       </Container>
     </div>
