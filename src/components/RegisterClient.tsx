@@ -35,10 +35,21 @@ const RegisterClient = () => {
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
   const webcamRef = useRef<Webcam | null>(null);
-
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>();
+  const [deviceID, setDeviceID] = useState<string | null>();
   const [phoneExists, setPhoneExists] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [refreshCamera, setRefreshCamera] = useState(false);
   const { setOverlayChildren, setOpen } = useOverlay();
+  const handleDevices = useCallback(
+    (mediaDevices: MediaDeviceInfo[]) =>
+      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    []
+  );
+
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(handleDevices);
+  }, []);
   const handleRegister = async (data: RegisterClientForm) => {
     setLoading(true);
     if (phoneExists) {
@@ -48,6 +59,7 @@ const RegisterClient = () => {
       });
       return;
     }
+
     try {
       const formData = new FormData();
 
@@ -482,19 +494,42 @@ const RegisterClient = () => {
               {errors.image && (
                 <p className="text-red-500 ml-2">{errors.image.message}</p>
               )}
+
               <PrimaryButton
                 type="button"
                 onClick={() => {
+                  navigator.mediaDevices.enumerateDevices().then(handleDevices);
                   setOpen(true);
                   setOverlayChildren(
                     <div className="flex flex-col items-center gap-2">
-                      <Webcam
-                        audio={false}
-                        ref={webcamRef}
-                        screenshotFormat="image/jpeg"
-                        videoConstraints={{ facingMode: "user" }}
-                        className="w-60 h-70 rounded-2xl object-cover object-center"
-                      />
+                      <select
+                        onChange={(e) => {
+                          setDeviceID(e.target.value);
+                          setRefreshCamera(true);
+
+                          setTimeout(() => {
+                            setRefreshCamera(false);
+                          }, 1000);
+                        }}
+                        value={deviceID!}
+                      >
+                        {devices?.map((device, index) => (
+                          <option key={index} value={device.deviceId}>
+                            {device.label || `Camera ${index + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                      {refreshCamera && (
+                        <Webcam
+                          audio={false}
+                          ref={webcamRef}
+                          screenshotFormat="image/jpeg"
+                          videoConstraints={
+                            deviceID ? { deviceId: deviceID } : undefined
+                          }
+                          className="w-60 h-70 rounded-2xl object-cover object-center"
+                        />
+                      )}
                       <PrimaryButton
                         type="button"
                         onClick={() => {

@@ -15,11 +15,13 @@ import { FaChevronLeft } from "react-icons/fa";
 import TraineeController from "../controllers/traineeController";
 import GuestController from "../controllers/guestController";
 import logo from "../assets/logo.png";
+import { useTranslation } from "react-i18next";
 
 const ClientDetail = () => {
   const { id, client } = useParams();
   const [clientData, setClientData] = useState<Client>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const fetchClient = async () => {
     try {
@@ -50,7 +52,9 @@ const ClientDetail = () => {
         });
       }
     } catch (error) {
-      toast.error(<ErrorToast message="Can not find client." />);
+      toast.error(
+        <ErrorToast message={t("notFound", { field: t("client") })} />
+      );
       navigate(`/dashboard/${client}`);
     }
   };
@@ -62,11 +66,13 @@ const ClientDetail = () => {
   const handleDelete = async (id: number) => {
     try {
       await MaterialController.delete(id);
-      toast.success(<SuccessToast message="Material deleted successfully!" />);
-    } catch (error) {
-      toast.error(
-        <ErrorToast message="Something went wrong, Please try again!" />
+      toast.success(
+        <SuccessToast
+          message={t("successDelete", { resource: t("material") })}
+        />
       );
+    } catch (error) {
+      toast.error(<ErrorToast message={t("somthingWrong")} />);
     } finally {
       fetchClient();
     }
@@ -80,7 +86,7 @@ const ClientDetail = () => {
         >
           <FaChevronLeft /> Back
         </PrimaryButton>
-        <h1 className="text-3xl text-white font-bold">Client Detail</h1>
+        <h1 className="text-3xl text-white font-bold">{t("clientDetail")}</h1>
         <PrimaryButton
           onClick={() =>
             navigate(`/dashboard/register/${client}/material/${id}`)

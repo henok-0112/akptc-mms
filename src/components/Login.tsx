@@ -45,18 +45,16 @@ const Login = () => {
       });
       reset();
       if (response) {
-        toast.success(<SuccessToast message="Login Successfull!" />);
+        toast.success(<SuccessToast message={t("loginSuccess")} />);
         navigate("/dashboard");
       }
     } catch (error) {
       if (isAxiosError(error) && error.status === 403) {
-        toast.error(<ErrorToast message={t("invalidCredentials")} />);
+        toast.error(<ErrorToast message={t("somethingWrong")} />);
       } else if (error instanceof Error) {
         toast.error(<ErrorToast message={error.message} />);
       } else {
-        toast.error(
-          <ErrorToast message="Something went wrong, please try again!" />
-        );
+        toast.error(<ErrorToast message={t("somethingWrong")} />);
       }
     }
   };
@@ -66,7 +64,7 @@ const Login = () => {
     }
   }, [user]);
   useEffect(() => {
-    i18n.changeLanguage("om");
+    i18n.changeLanguage("en");
   }, []);
 
   return loading ? (

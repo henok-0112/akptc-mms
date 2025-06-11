@@ -13,6 +13,7 @@ import UserController from "../controllers/UserController";
 import type User from "../model/User";
 import { useNavigate } from "react-router";
 import { registerClearUserFunction } from "../helpers/logout";
+import { useTranslation } from "react-i18next";
 
 type LoginProps = {
   username: string;
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const fetchCurrentUser = async () => {
     try {
@@ -79,16 +81,14 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
       setLoading(false);
       if (isAxiosError(error)) {
         if (error.code == "ERR_NETWORK") {
-          toast.error(
-            <ErrorToast message={"Network Error Please Try Again"} />
-          );
+          toast.error(<ErrorToast message={t("networkError")} />);
         } else {
-          toast.error(<ErrorToast message={error.response?.data.message} />);
+          toast.error(<ErrorToast message={t("invalidCredentials")} />);
         }
       } else if (error instanceof Error) {
         toast.error(<ErrorToast message={error.message} />);
       } else {
-        toast.error(<ErrorToast message="Unkown Error Occured" />);
+        toast.error(<ErrorToast message={t("somethingWrong")} />);
       }
       return false;
     }

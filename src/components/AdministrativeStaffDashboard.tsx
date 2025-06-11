@@ -57,12 +57,12 @@ const AdministrativeStaffDashboard = () => {
     try {
       await AdministrativeStaffController.delete(id);
       toast.success(
-        <SuccessToast message="Administrative Staff deleted successfully!" />
+        <SuccessToast
+          message={t("successDelete", { resource: t("administrativeStaff") })}
+        />
       );
     } catch (error) {
-      toast.error(
-        <ErrorToast message="Something went wrong, Please try again!" />
-      );
+      toast.error(<ErrorToast message={t("somethingWrong")} />);
     } finally {
       handleGetAll();
     }

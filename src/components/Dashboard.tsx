@@ -4,6 +4,7 @@ import {
   FaCaretDown,
   FaGraduationCap,
   FaIdBadge,
+  FaLanguage,
   FaTimes,
   FaUser,
   FaUserPlus,
@@ -12,6 +13,7 @@ import Logo from "../assets/logo.png";
 import SideNav from "./SideNav";
 import {
   DangerButton,
+  DropdownButton,
   DropdownLinkButton,
   PrimaryLinkButton,
 } from "./ui/Buttons";
@@ -30,7 +32,7 @@ const Dashboard: React.FC<PropsWithChildren> = () => {
   const { isDesktop } = useScreenSize();
   const { user, logout } = useAuth();
   const { open, overlayChildren, loadingOverlay, setOpen } = useOverlay();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => {}, 100);
@@ -77,6 +79,11 @@ const Dashboard: React.FC<PropsWithChildren> = () => {
 
         {isDesktop ? (
           <div className="flex gap-2 items-center">
+            <select onChange={(e) => i18n.changeLanguage(e.target.value)}>
+              <option value="en">English</option>
+              <option value="am">Amharic</option>
+              <option value="om">Afan Oromo</option>
+            </select>
             <p className="text-xl font-bold">
               {t("welcome", { user: user?.name })}
             </p>

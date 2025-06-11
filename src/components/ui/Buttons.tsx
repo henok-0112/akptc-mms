@@ -193,6 +193,76 @@ const DropdownLinkButton: React.FC<
   );
 };
 
+type DropdownButtonProps = {
+  className?: string;
+  items: Array<{
+    icon: ReactNode;
+    title: string;
+    onClick: MouseEventHandler<HTMLButtonElement>;
+  }>;
+};
+
+const DropdownButton: React.FC<PropsWithChildren<DropdownButtonProps>> = ({
+  children,
+  items,
+  className,
+}) => {
+  const { isDesktop } = useScreenSize();
+  const [active, setActive] = useState(false);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    setActive(open);
+  }, [open]);
+  return (
+    <div>
+      <button
+        className={`px-10 py-3 text-xl shadow-xl cursor-pointer ${
+          isDesktop ? "w-full" : "max-w-100"
+        } font-bold rounded-full flex gap-4 justify-evenly items-center mb-2 ${className} ${
+          active
+            ? "bg-green-400/50 text-black border-2 border-green-400/50"
+            : "border-2 border-black text-black duration-500 hover:bg-green-400/50 hover:border-green-400/50 hover:text-black transition-all"
+        }`}
+        onClick={() => setOpen(!open)}
+      >
+        {children}
+        <FaChevronDown
+          className={`transition-all duration-500 ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
+        />
+      </button>
+      <div
+        className={`grid ${
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        } transition-all duration-1000 ${isDesktop ? "w-full" : "max-w-100"}`}
+      >
+        <div
+          className={`overflow-hidden  rounded-2xl bg-white/50 px-3 backdrop-blur-sm flex flex-col gap-2 transition-all duration-1000 ${
+            open
+              ? "py-3 border border-white/50"
+              : "py-0 border-none border-white/50"
+          }`}
+        >
+          {items.map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              className={
+                `px-10 py-3 text-xl rounded-xl shadow-xl cursor-pointer font-bold flex gap-4 justify-evenly items-center ${"bg-green-400/50 text-black border-2 border-green-400/50"}` +
+                " " +
+                className
+              }
+            >
+              {item.icon} {item.title}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 type RadioButtonProps = {
   name: string;
   id: string;
@@ -233,5 +303,6 @@ export {
   DangerLinkButton,
   RadioButton,
   PrimaryLinkButton,
+  DropdownButton,
   DropdownLinkButton,
 };
