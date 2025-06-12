@@ -125,7 +125,7 @@ const Dashboard: React.FC<PropsWithChildren> = () => {
             },
           ]}
         >
-          <FaIdBadge size={25} /> <span>{t("clients")}</span>
+          <FaIdBadge size={25} /> <span>{t("client")}</span>
         </DropdownLinkButton>
         <PrimaryLinkButton
           link="/dashboard/register"

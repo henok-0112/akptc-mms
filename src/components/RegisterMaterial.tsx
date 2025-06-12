@@ -2,7 +2,7 @@ import { Controller, useForm } from "react-hook-form";
 import { PrimaryTextField } from "./TextFields";
 import { PrimaryButton } from "./ui/Buttons";
 import PrimaryDropDown from "./DropDown";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import AdministrativeStaffController from "../controllers/administrativeStaffController";
 import { toast } from "react-toastify";
@@ -10,10 +10,12 @@ import { ErrorToast, SuccessToast } from "./Toasts";
 import Loader from "./Loader";
 import type { RegisterMaterialForm } from "../types/material.type";
 import { useNavigate, useParams } from "react-router";
-import { FaChevronLeft } from "react-icons/fa";
+import { FaCamera, FaChevronLeft } from "react-icons/fa";
 import TrainerController from "../controllers/trainerController";
 import TraineeController from "../controllers/traineeController";
 import GuestController from "../controllers/guestController";
+import { useTranslation } from "react-i18next";
+import Webcam from "react-webcam";
 
 const RegisterMaterial = () => {
   const {
@@ -21,14 +23,32 @@ const RegisterMaterial = () => {
     reset,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<RegisterMaterialForm>();
-  const navigate = useNavigate();
 
+  const [refreshCamera, setRefreshCamera] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const webcamRef = useRef<Webcam | null>(null);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>();
+  const [deviceID, setDeviceID] = useState<string | null>();
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const handleDevices = useCallback(
+    (mediaDevices: MediaDeviceInfo[]) =>
+      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    []
+  );
+
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { id, client } = useParams();
 
-  const [imagePreview, setImagePreview] =
-    useState<(File & { preview: string })[]>();
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(handleDevices);
+  }, []);
+  const [imagePreview, setImagePreview] = useState<
+    (File & { preview: string })[]
+  >([]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const handleRegister = async (data: RegisterMaterialForm) => {
@@ -62,19 +82,17 @@ const RegisterMaterial = () => {
       }
       if (response.status === 201) {
         toast.success(
-          <SuccessToast message="Material registered successfully!" />
+          <SuccessToast
+            message={t("successRegister", { resource: t("material") })}
+          />
         );
         reset();
       } else {
-        toast.error(
-          <ErrorToast message="Something went wrong, please try again" />
-        );
+        toast.error(<ErrorToast message={t("somethingWrong")} />);
       }
       setLoading(false);
     } catch (error) {
-      toast.error(
-        <ErrorToast message="Something went wrong, please try again" />
-      );
+      toast.error(<ErrorToast message={t("somethingWrong")} />);
       setLoading(false);
     }
   };
@@ -94,29 +112,33 @@ const RegisterMaterial = () => {
               type="button"
               className="flex items-center justify-between max-w-fit gap-3"
             >
-              <FaChevronLeft /> Back
+              <FaChevronLeft /> {t("back")}
             </PrimaryButton>
 
-            <h1 className="text-3xl text-white font-bold">Register Material</h1>
+            <h1 className="text-3xl text-white font-bold">
+              {t("regiserMaterial")}
+            </h1>
           </div>
           <div className="flex w-full  items-center gap-3">
             <div className="flex-1 ">
               <PrimaryTextField
-                placeholder="Enter brand here....."
+                placeholder={t("input", { field: t("brandSm") })}
                 id="brand"
-                label="Brand"
-                {...register("brand", { required: "Brand is Required." })}
+                label={t("brand")}
+                {...register("brand", {
+                  required: t("isRequired", { field: t("brand") }),
+                })}
                 type="text"
               />
               {errors.brand && (
                 <p className="text-red-500 ml-2">{errors.brand.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter model here....."
+                placeholder={t("input", { field: t("modelSm") })}
                 id="model"
-                label="Model"
+                label={t("model")}
                 {...register("model", {
-                  required: "Model is Required.",
+                  required: t("isRequired", { field: t("model") }),
                 })}
                 type="text"
               />
@@ -124,11 +146,11 @@ const RegisterMaterial = () => {
                 <p className="text-red-500 ml-2">{errors.model.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter serial number here....."
+                placeholder={t("input", { field: t("serialNumberSm") })}
                 id="serialNumber"
-                label="Serial Number"
+                label={t("serialNumber")}
                 {...register("serialNumber", {
-                  required: "Serial Number is Required.",
+                  required: t("isRequired", { field: t("serialNumber") }),
                 })}
                 type="text"
               />
@@ -141,11 +163,13 @@ const RegisterMaterial = () => {
               <Controller
                 name="type"
                 control={control}
-                rules={{ required: "Material Type is required." }}
+                rules={{
+                  required: t("isRequired", { field: t("materialType") }),
+                }}
                 render={({ field }) => (
                   <PrimaryDropDown
                     choices={["Laptop", "Network Cable", "Crimper"]}
-                    label="Material Type"
+                    label={t("materialType")}
                     onBlur={field.onBlur}
                     name={field.name}
                     onChange={field.onChange}
@@ -162,11 +186,11 @@ const RegisterMaterial = () => {
               <Controller
                 name="ownership"
                 control={control}
-                rules={{ required: "Ownership is required." }}
+                rules={{ required: t("isRequired", { field: t("ownership") }) }}
                 render={({ field }) => (
                   <PrimaryDropDown
                     choices={["Collage", "Private"]}
-                    label="Ownership"
+                    label={t("ownership")}
                     onBlur={field.onBlur}
                     name={field.name}
                     onChange={field.onChange}
@@ -181,21 +205,55 @@ const RegisterMaterial = () => {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <p className="text-white text-2xl font-bold">Material Images</p>
+              <p className="text-white text-2xl font-bold">
+                {t("materialImage", { count: 2 })}
+              </p>
+              {cameraOpen && (
+                <select
+                  onChange={(e) => {
+                    setDeviceID(e.target.value);
+                    setRefreshCamera(true);
+
+                    setTimeout(() => {
+                      setRefreshCamera(false);
+                    }, 1000);
+                  }}
+                  value={deviceID!}
+                >
+                  {devices?.map((device, index) => (
+                    <option key={index} value={device.deviceId}>
+                      {device.label || `Camera ${index + 1}`}
+                    </option>
+                  ))}
+                </select>
+              )}
               <Controller
                 name="images"
                 control={control}
-                rules={{ required: "Material Image is required." }}
+                rules={{
+                  required: t("isRequired", { field: t("materialImage") }),
+                }}
                 render={({ field: { onChange, ...field } }) => {
                   const onDrop = useCallback((acceptedFiles: File[]) => {
-                    setImagePreview(
-                      acceptedFiles.map((file) =>
-                        Object.assign(file, {
-                          preview: URL.createObjectURL(file),
-                        })
-                      )
-                    );
-                    onChange(acceptedFiles);
+                    setImagePreview((prev) => {
+                      const imagePreviews: (File & {
+                        preview: string;
+                      })[] = [
+                        ...prev,
+                        ...acceptedFiles.map((file) =>
+                          Object.assign(file, {
+                            preview: URL.createObjectURL(file),
+                          })
+                        ),
+                      ];
+
+                      return imagePreviews;
+                    });
+                    setImageFiles((prev) => {
+                      const imageFiles: File[] = [...prev, ...acceptedFiles];
+                      onChange(imageFiles);
+                      return imageFiles;
+                    });
                   }, []);
                   const {
                     getRootProps,
@@ -227,7 +285,21 @@ const RegisterMaterial = () => {
                         onBlur={field.onBlur}
                         type="file"
                       />
-                      {imagePreview ? (
+                      {cameraOpen ? (
+                        refreshCamera ? (
+                          <Loader />
+                        ) : (
+                          <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={
+                              deviceID ? { deviceId: deviceID } : undefined
+                            }
+                            className="w-full h-full rounded-2xl object-cover object-center"
+                          />
+                        )
+                      ) : imagePreview && imagePreview.length !== 0 ? (
                         imagePreview.map((file, idx) => (
                           <img
                             key={idx}
@@ -239,17 +311,19 @@ const RegisterMaterial = () => {
                         <>
                           {isDragActive ? (
                             isDragReject ? (
-                              <p className="text-xl text-center font-bold">
-                                Drop files here.....
-                              </p>
+                              <div className="h-full w-full ">
+                                <p className="text-xl text-center font-bold">
+                                  {t("drapImage")}
+                                </p>
+                              </div>
                             ) : (
                               <p className="text-xl text-center font-bold">
-                                Drop files here.....
+                                {t("drapImage")}
                               </p>
                             )
                           ) : (
                             <p className="text-xl text-center font-bold">
-                              Drag and Drop files here.....
+                              {t("dragAndDrop")}
                             </p>
                           )}
                         </>
@@ -260,6 +334,64 @@ const RegisterMaterial = () => {
               />
               {errors.images && (
                 <p className="text-red-500 ml-2">{errors.images.message}</p>
+              )}
+              <PrimaryButton
+                type="button"
+                onClick={() => {
+                  navigator.mediaDevices.enumerateDevices().then(handleDevices);
+                  setCameraOpen((prev) => {
+                    if (!prev) {
+                      setRefreshCamera(true);
+                      setTimeout(() => {
+                        setRefreshCamera(false);
+                      }, 2000);
+                    }
+                    return !prev;
+                  });
+                }}
+                className="flex gap-2 items-center justify-between max-w-fit"
+              >
+                <FaCamera />
+                {t("camera")}
+              </PrimaryButton>
+              {cameraOpen && (
+                <PrimaryButton
+                  type="button"
+                  onClick={() => {
+                    if (webcamRef.current) {
+                      const imageSrc = webcamRef.current.getScreenshot();
+                      if (imageSrc) {
+                        fetch(imageSrc)
+                          .then((res) => res.blob())
+                          .then((blob) => {
+                            const file = new File([blob], "webcam_image.jpg", {
+                              type: "image/jpeg",
+                            });
+                            setImagePreview((prev) => {
+                              prev?.push(
+                                Object.assign(file, {
+                                  preview: URL.createObjectURL(file),
+                                })
+                              );
+                              return prev;
+                            });
+
+                            setImageFiles((prev) => {
+                              const imageFiles: File[] = [...prev, file];
+                              setValue("images", imageFiles, {
+                                shouldValidate: true,
+                              });
+                              return imageFiles;
+                            });
+
+                            setCameraOpen(false);
+                          });
+                      }
+                    }
+                  }}
+                >
+                  {t("capture")}
+                </PrimaryButton>
               )}
             </div>
           </div>

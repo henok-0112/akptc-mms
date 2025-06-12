@@ -12,10 +12,12 @@ import { TableBodyRow } from "./TableRow";
 import TableData from "./TableData";
 import TraineeController from "../controllers/traineeController";
 import type { Trainee } from "../types/trainee.type";
+import { useTranslation } from "react-i18next";
 
 const TraineeDashboard = () => {
   const [trainees, setTrainees] = useState<Array<Trainee>>([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,11 +46,13 @@ const TraineeDashboard = () => {
   const handleDelete = async (id: number) => {
     try {
       await TraineeController.delete(id);
-      toast.success(<SuccessToast message="Trainee deleted successfully!" />);
-    } catch (error) {
-      toast.error(
-        <ErrorToast message="Something went wrong, Please try again!" />
+      toast.success(
+        <SuccessToast
+          message={t("successDelete", { resource: t("trainee") })}
+        />
       );
+    } catch (error) {
+      toast.error(<ErrorToast message={t("somethingWrong")} />);
     } finally {
       handleGetAll();
     }
@@ -66,13 +70,15 @@ const TraineeDashboard = () => {
 
   return (
     <div className="flex items-center flex-col gap-2 justify-center">
-      <h1 className="text-3xl font-bold text-white w-full">Trainees</h1>
+      <h1 className="text-3xl font-bold text-white w-full">
+        {t("trainee", { count: 2 })}
+      </h1>
       <div className="w-140 my-3">
         <PrimaryTextField
           id="search"
           onBlur={() => {}}
           type="text"
-          placeholder="Search trainees here......."
+          placeholder={t("search", { field: t("traineeSm", { count: 2 }) })}
           onChange={(event) => {
             setSearch(event.target.value);
           }}
@@ -82,25 +88,27 @@ const TraineeDashboard = () => {
         <Loader />
       ) : trainees.length === 0 ? (
         <div className="w-full min-h-full flex-1 flex flex-col justify-center items-center">
-          <p className="text-3xl">There are no trainees registered!</p>
+          <p className="text-3xl">
+            {t("notRegistered", { field: t("guestSm", { count: 2 }) })}
+          </p>
           <PrimaryLinkButton className="max-w-fit" link="/dashboard/register">
-            Register Clients
+            {t("registerClient", { count: 2 })}
           </PrimaryLinkButton>
         </div>
       ) : (
         <>
           <Table
             headers={[
-              "No.",
-              "Name",
-              "Age",
-              "Gender",
-              "Phone Number",
-              "Subcity",
-              "District",
-              "Department",
-              "Stream",
-              "Actions",
+              t("no"),
+              t("name"),
+              t("age"),
+              t("gender"),
+              t("phoneNumber"),
+              t("subcity"),
+              t("district"),
+              t("department"),
+              t("stream"),
+              t("actions"),
             ]}
             bodyData={trainees?.map((trainee, index) => (
               <TableBodyRow key={index}>
@@ -179,10 +187,10 @@ const TraineeDashboard = () => {
                     <PrimaryLinkButton
                       link={`/dashboard/trainee/edit/${trainee.id}`}
                     >
-                      Edit
+                      {t("edit")}
                     </PrimaryLinkButton>
                     <DangerButton onClick={() => handleDelete(trainee.id)}>
-                      Delete
+                      {t("delete")}
                     </DangerButton>
                   </div>
                 </TableData>

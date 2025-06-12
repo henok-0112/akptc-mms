@@ -12,11 +12,13 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { PrimaryButton } from "./ui/Buttons";
+import { useTranslation } from "react-i18next";
 
 const MaterialDetail = () => {
   const { id, client } = useParams();
   const [materialData, setMaterialData] = useState<Material>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const fetchAdministrativeStaff = async () => {
     try {
@@ -41,9 +43,9 @@ const MaterialDetail = () => {
           type="button"
           className="flex items-center justify-between max-w-fit gap-3"
         >
-          <FaChevronLeft /> Back
+          <FaChevronLeft /> {t("back")}
         </PrimaryButton>
-        <h1 className="text-3xl text-white font-bold">Material Detail</h1>
+        <h1 className="text-3xl text-white font-bold">{t("materialDetail")}</h1>
       </div>
       <Container className="p-4 max-w-[700px]">
         <Swiper
@@ -51,7 +53,6 @@ const MaterialDetail = () => {
           className="rounded-lg"
           spaceBetween={30}
           navigation={{ prevEl: ".custom-prev", nextEl: ".custom-next" }}
-          pagination={{ clickable: true }}
           autoplay={{ delay: 3000 }}
           loop
         >
@@ -74,23 +75,23 @@ const MaterialDetail = () => {
       </Container>
       <Container className="p-4 max-w-fit">
         <div className="flex gap-2">
-          <p className="text-2xl font-bold ">Brand:</p>
+          <p className="text-2xl font-bold ">{t("brand")}:</p>
           <p className="text-2xl">{materialData?.brand}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-2xl font-bold ">Model:</p>
+          <p className="text-2xl font-bold ">{t("model")}:</p>
           <p className="text-2xl">{materialData?.model}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-2xl font-bold ">Serial Number:</p>
+          <p className="text-2xl font-bold ">{t("serialNumber")}:</p>
           <p className="text-2xl capitalize">{materialData?.serialNumber}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-2xl font-bold ">Type:</p>
+          <p className="text-2xl font-bold ">{t("type")}:</p>
           <p className="text-2xl">{materialData?.type}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-2xl font-bold ">Ownership:</p>
+          <p className="text-2xl font-bold ">{t("ownership")}:</p>
           <p className="text-2xl">{materialData?.ownership}</p>
         </div>
       </Container>

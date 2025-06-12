@@ -12,10 +12,12 @@ import { TableBodyRow } from "./TableRow";
 import TableData from "./TableData";
 import TrainerController from "../controllers/trainerController";
 import type { Trainer } from "../types/trainer.type";
+import { useTranslation } from "react-i18next";
 
 const TrainerDashboard = () => {
   const [trainers, setTrainers] = useState<Array<Trainer>>([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,11 +46,11 @@ const TrainerDashboard = () => {
   const handleDelete = async (id: number) => {
     try {
       await TrainerController.delete(id);
-      toast.success(<SuccessToast message="Trainer deleted successfully!" />);
-    } catch (error) {
-      toast.error(
-        <ErrorToast message="Something went wrong, Please try again!" />
+      toast.success(
+        <SuccessToast message={t("successDelete", { resource: t("guest") })} />
       );
+    } catch (error) {
+      toast.error(<ErrorToast message={t("somethingWrong")} />);
     } finally {
       handleGetAll();
     }
@@ -66,13 +68,15 @@ const TrainerDashboard = () => {
 
   return (
     <div className="flex items-center flex-col gap-2 justify-center">
-      <h1 className="text-3xl font-bold text-white w-full">Trainers</h1>
+      <h1 className="text-3xl font-bold text-white w-full">
+        {t("trainer", { count: 2 })}
+      </h1>
       <div className="w-140 my-3">
         <PrimaryTextField
           id="search"
           onBlur={() => {}}
           type="text"
-          placeholder="Search trainers here......."
+          placeholder={t("search", { field: t("trainerSm", { count: 2 }) })}
           onChange={(event) => {
             setSearch(event.target.value);
           }}
@@ -82,24 +86,26 @@ const TrainerDashboard = () => {
         <Loader />
       ) : trainers.length === 0 ? (
         <div className="w-full min-h-full flex-1 flex flex-col justify-center items-center">
-          <p className="text-3xl">There are no trainers registered!</p>
+          <p className="text-3xl">
+            {t("notRegistered", { field: t("trainerSm", { count: 2 }) })}
+          </p>
           <PrimaryLinkButton className="max-w-fit" link="/dashboard/register">
-            Register Clients
+            {t("registerClient", { count: 2 })}
           </PrimaryLinkButton>
         </div>
       ) : (
         <>
           <Table
             headers={[
-              "No.",
-              "Name",
-              "Age",
-              "Gender",
-              "Phone Number",
-              "Subcity",
-              "District",
-              "Department",
-              "Actions",
+              t("no"),
+              t("name"),
+              t("age"),
+              t("gender"),
+              t("phoneNumber"),
+              t("subcity"),
+              t("district"),
+              t("department"),
+              t("actions"),
             ]}
             bodyData={trainers?.map((trainer, index) => (
               <TableBodyRow key={index}>
@@ -170,10 +176,10 @@ const TrainerDashboard = () => {
                     <PrimaryLinkButton
                       link={`/dashboard/trainer/edit/${trainer.id}`}
                     >
-                      Edit
+                      {t("edit")}
                     </PrimaryLinkButton>
                     <DangerButton onClick={() => handleDelete(trainer.id)}>
-                      Delete
+                      {t("delete")}
                     </DangerButton>
                   </div>
                 </TableData>

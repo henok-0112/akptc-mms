@@ -4,7 +4,7 @@ import { PrimaryButton, RadioButton } from "./ui/Buttons";
 import PrimaryDropDown from "./DropDown";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { ClientTypes, type RegisterClientForm } from "../types/client.type";
+import { type RegisterClientForm } from "../types/client.type";
 import AdministrativeStaffController from "../controllers/administrativeStaffController";
 import { toast } from "react-toastify";
 import { ErrorToast, SuccessToast } from "./Toasts";
@@ -18,6 +18,7 @@ import { useNavigate } from "react-router";
 import { FaCamera } from "react-icons/fa";
 import { useOverlay } from "../contexts/OverlayContext";
 import Webcam from "react-webcam";
+import { useTranslation } from "react-i18next";
 
 const RegisterClient = () => {
   const {
@@ -34,18 +35,25 @@ const RegisterClient = () => {
   const clientType = watch("clientType");
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
+  const [cameraOpen, setCameraOpen] = useState(false);
   const webcamRef = useRef<Webcam | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>();
   const [deviceID, setDeviceID] = useState<string | null>();
   const [phoneExists, setPhoneExists] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshCamera, setRefreshCamera] = useState(false);
-  const { setOverlayChildren, setOpen } = useOverlay();
   const handleDevices = useCallback(
     (mediaDevices: MediaDeviceInfo[]) =>
       setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
     []
   );
+  const { t } = useTranslation();
+  const ClientTypes = {
+    ADMINISTRATIVE_STAFF: t("administrativeStaff"),
+    TRAINER: t("trainer"),
+    TRAINEE: t("trainee"),
+    GUEST: t("guest"),
+  } as const;
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
@@ -55,7 +63,7 @@ const RegisterClient = () => {
     if (phoneExists) {
       setError("phoneNumber", {
         type: "manual",
-        message: "Phone number already exists.",
+        message: t("alreadyExists", { field: t("phoneNumber") }),
       });
       return;
     }
@@ -104,63 +112,69 @@ const RegisterClient = () => {
         const response = await AdministrativeStaffController.register(formData);
         if (response.status === 201) {
           toast.success(
-            <SuccessToast message="Administrative Staff registered successfully!" />
+            <SuccessToast
+              message={t("successRegister", {
+                resource: t("administrativeStaff"),
+              })}
+            />
           );
           navigate(
             `/dashboard/register/administrative-staff/material/${response.data.id}`
           );
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       } else if (clientType === ClientTypes.TRAINER) {
         const response = await TrainerController.register(formData);
         if (response.status === 201) {
           toast.success(
-            <SuccessToast message="Trainer registered successfully!" />
+            <SuccessToast
+              message={t("successRegister", {
+                resource: t("trainer"),
+              })}
+            />
           );
           navigate(`/dashboard/register/trainer/material/${response.data.id}`);
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       } else if (clientType === ClientTypes.TRAINEE) {
         const response = await TraineeController.register(formData);
         if (response.status === 201) {
           toast.success(
-            <SuccessToast message="Trainee registered successfully!" />
+            <SuccessToast
+              message={t("successRegister", {
+                resource: t("trainee"),
+              })}
+            />
           );
           navigate(`/dashboard/register/trainee/material/${response.data.id}`);
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       } else if (clientType === ClientTypes.GUEST) {
         const response = await GuestController.register(formData);
         if (response.status === 201) {
           toast.success(
-            <SuccessToast message="Guest registered successfully!" />
+            <SuccessToast
+              message={t("successRegister", {
+                resource: t("guest"),
+              })}
+            />
           );
           navigate(`/dashboard/register/guest/material/${response.data.id}`);
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       }
 
       setLoading(false);
     } catch (error) {
-      toast.error(
-        <ErrorToast message="Something went wrong, please try again" />
-      );
+      toast.error(<ErrorToast message={t("somethingWrong")} />);
       setLoading(false);
     }
   };
@@ -193,7 +207,7 @@ const RegisterClient = () => {
         ) {
           setError("phoneNumber", {
             type: "manual",
-            message: "Phone number already exists.",
+            message: t("alreadyExists", { field: t("phoneNumber") }),
           });
           setPhoneExists(true);
         } else {
@@ -221,25 +235,27 @@ const RegisterClient = () => {
           <div className="flex w-full  items-center gap-3">
             <div className="flex-1 ">
               <PrimaryTextField
-                placeholder="Enter full name here....."
+                placeholder={t("input", { field: t("fullNameSm") })}
                 id="name"
-                label="Full Name"
-                {...register("name", { required: "Full Name is Required." })}
+                label={t("fullName")}
+                {...register("name", {
+                  required: t("isRequired", { field: t("fullName") }),
+                })}
                 type="text"
               />
               {errors.name && (
                 <p className="text-red-500 ml-2">{errors.name.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter age here....."
+                placeholder={t("input", { field: t("ageSm") })}
                 id="age"
-                label="Age"
+                label={t("age")}
                 {...register("age", {
-                  required: "Age is Required.",
+                  required: t("isRequired", { field: t("age") }),
                   validate: {
                     isInteger: (value) =>
                       Number.isInteger(Number(value)) ||
-                      "Age must be an integer.",
+                      t("isInteger", { field: t("age") }),
                   },
                 })}
                 type="number"
@@ -248,19 +264,23 @@ const RegisterClient = () => {
                 <p className="text-red-500 ml-2">{errors.age.message}</p>
               )}
               <label className=" font-bold text-xl ml-5 text-white">
-                Gender
+                {t("gender")}
               </label>
               <div className="flex justify-around">
                 <RadioButton
                   id="male"
-                  {...register("gender", { required: "Gender is Required." })}
-                  label="Male"
+                  {...register("gender", {
+                    required: t("isRequired", { field: t("gender") }),
+                  })}
+                  label={t("male")}
                   value="male"
                 />
                 <RadioButton
                   id="female"
-                  {...register("gender", { required: "Gender is Required." })}
-                  label="Female"
+                  {...register("gender", {
+                    required: t("isRequired", { field: t("gender") }),
+                  })}
+                  label={t("female")}
                   value="female"
                 />
               </div>
@@ -268,16 +288,18 @@ const RegisterClient = () => {
                 <p className="text-red-500 ml-2">{errors.gender.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter phone number here....."
+                placeholder={t("input", { field: t("phoneNumberSm") })}
                 id="phoneNumber"
-                label="Phone Number"
+                label={t("phoneNumber")}
                 {...register("phoneNumber", {
-                  required: "Phone Number is Required.",
+                  required: t("isRequired", { field: t("phoneNumber") }),
                   validate: {
-                    exists: () => !phoneExists || "Phonenumber already exists.",
+                    exists: () =>
+                      !phoneExists ||
+                      t("alreadyExists", { field: t("phoneNumber") }),
                     isInteger: (value) =>
                       Number.isInteger(Number(value)) ||
-                      "Phonenumber must be an integer.",
+                      t("isInteger", { field: t("phoneNumber") }),
                   },
                 })}
                 type="number"
@@ -291,20 +313,24 @@ const RegisterClient = () => {
                 </p>
               )}
               <PrimaryTextField
-                placeholder="Enter subcity here....."
+                placeholder={t("input", { field: t("subcitySm") })}
                 id="subcity"
-                label="Subcity"
-                {...register("subcity", { required: "Subcity is Required." })}
+                label={t("subcity")}
+                {...register("subcity", {
+                  required: t("isRequired", { field: t("subcity") }),
+                })}
                 type="text"
               />
               {errors.subcity && (
                 <p className="text-red-500 ml-2">{errors.subcity.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter district here....."
+                placeholder={t("input", { field: t("districtSm") })}
                 id="district"
-                label="District"
-                {...register("district", { required: "District is Required." })}
+                label={t("district")}
+                {...register("district", {
+                  required: t("isRequired", { field: t("district") }),
+                })}
                 type="text"
               />
               {errors.district && (
@@ -313,11 +339,13 @@ const RegisterClient = () => {
               <Controller
                 name="clientType"
                 control={control}
-                rules={{ required: "Client Type is required." }}
+                rules={{
+                  required: t("isRequired", { field: t("clientType") }),
+                }}
                 render={({ field }) => (
                   <PrimaryDropDown
                     choices={Object.values(ClientTypes)}
-                    label="Client Type"
+                    label={t("clientType")}
                     onBlur={field.onBlur}
                     name={field.name}
                     onChange={field.onChange}
@@ -333,21 +361,27 @@ const RegisterClient = () => {
               {clientType === ClientTypes.ADMINISTRATIVE_STAFF ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter office here....."
+                    placeholder={t("input", { field: t("officeSm") })}
                     id="office"
-                    label="Office"
-                    {...register("office", { required: "Office is Required." })}
+                    label={t("office")}
+                    {...register("office", {
+                      required: t("isRequired", { field: t("office") }),
+                    })}
                     type="text"
                   />
                   {"office" in errors && errors.office && (
                     <p className="text-red-500 ml-2">{errors.office.message}</p>
                   )}
                   <PrimaryTextField
-                    placeholder="Enter job responsibility here....."
+                    placeholder={t("input", {
+                      field: t("jobResponsibilitySm"),
+                    })}
                     id="jobResponsibility"
-                    label="Job Responsibility"
+                    label={t("jobResponsibility")}
                     {...register("jobResponsibility", {
-                      required: "Job Responsibility is Required.",
+                      required: t("isRequired", {
+                        field: t("jobReponsibility"),
+                      }),
                     })}
                     type="text"
                   />
@@ -361,11 +395,11 @@ const RegisterClient = () => {
               ) : clientType === ClientTypes.TRAINER ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter department here....."
+                    placeholder={t("input", { field: t("departmentSm") })}
                     id="department"
-                    label="Department"
+                    label={t("department")}
                     {...register("department", {
-                      required: "Department is Required.",
+                      required: t("isRequired", { field: t("department") }),
                     })}
                     type="text"
                   />
@@ -378,11 +412,11 @@ const RegisterClient = () => {
               ) : clientType === ClientTypes.TRAINEE ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter department here....."
+                    placeholder={t("input", { field: t("departmentSm") })}
                     id="department"
-                    label="Department"
+                    label={t("department")}
                     {...register("department", {
-                      required: "Department is Required.",
+                      required: t("isRequired", { field: t("department") }),
                     })}
                     type="text"
                   />
@@ -392,10 +426,12 @@ const RegisterClient = () => {
                     </p>
                   )}
                   <PrimaryTextField
-                    placeholder="Enter stream here....."
+                    placeholder={t("input", { field: t("streamSm") })}
                     id="stream"
-                    label="Stream"
-                    {...register("stream", { required: "Stream is Required." })}
+                    label={t("stream")}
+                    {...register("stream", {
+                      required: t("isRequired", { field: t("stream") }),
+                    })}
                     type="text"
                   />
                   {"stream" in errors && errors.stream && (
@@ -405,10 +441,12 @@ const RegisterClient = () => {
               ) : clientType === ClientTypes.GUEST ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter office here....."
+                    placeholder={t("input", { field: t("officeSm") })}
                     id="office"
-                    label="Office"
-                    {...register("office", { required: "Office is Required." })}
+                    label={t("office")}
+                    {...register("office", {
+                      required: t("isRequired", { field: t("office") }),
+                    })}
                     type="text"
                   />
                   {"office" in errors && errors.office && (
@@ -420,11 +458,34 @@ const RegisterClient = () => {
               )}
             </div>
             <div className="flex flex-col gap-2 items-center">
-              <p className="text-white text-2xl font-bold">Client Image</p>
+              <p className="text-white text-2xl font-bold">
+                {t("clientImage")}
+              </p>
+              {cameraOpen && (
+                <select
+                  onChange={(e) => {
+                    setDeviceID(e.target.value);
+                    setRefreshCamera(true);
+
+                    setTimeout(() => {
+                      setRefreshCamera(false);
+                    }, 1000);
+                  }}
+                  value={deviceID!}
+                >
+                  {devices?.map((device, index) => (
+                    <option key={index} value={device.deviceId}>
+                      {device.label || `Camera ${index + 1}`}
+                    </option>
+                  ))}
+                </select>
+              )}
               <Controller
                 name="image"
                 control={control}
-                rules={{ required: "Client Image is required." }}
+                rules={{
+                  required: t("isRequired", { field: t("clientImage") }),
+                }}
                 render={({ field: { onChange, ...field } }) => {
                   const onDrop = useCallback((acceptedFiles: File[]) => {
                     const file = acceptedFiles[0];
@@ -463,7 +524,21 @@ const RegisterClient = () => {
                         onBlur={field.onBlur}
                         type="file"
                       />
-                      {imagePreview !== "" ? (
+                      {cameraOpen ? (
+                        refreshCamera ? (
+                          <Loader />
+                        ) : (
+                          <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={
+                              deviceID ? { deviceId: deviceID } : undefined
+                            }
+                            className="w-full h-full rounded-2xl object-cover object-center"
+                          />
+                        )
+                      ) : imagePreview !== "" ? (
                         <img
                           src={imagePreview}
                           className="w-full h-full rounded-xl object-cover object-center"
@@ -473,16 +548,16 @@ const RegisterClient = () => {
                           {isDragActive ? (
                             isDragReject ? (
                               <p className="text-xl text-center font-bold">
-                                Drop files here.....
+                                {t("drapImage")}
                               </p>
                             ) : (
                               <p className="text-xl text-center font-bold">
-                                Drop files here.....
+                                {t("drapImage")}
                               </p>
                             )
                           ) : (
                             <p className="text-xl text-center font-bold">
-                              Drag and Drop files here.....
+                              {t("dragAndDrop")}
                             </p>
                           )}
                         </>
@@ -499,71 +574,47 @@ const RegisterClient = () => {
                 type="button"
                 onClick={() => {
                   navigator.mediaDevices.enumerateDevices().then(handleDevices);
-                  setOpen(true);
-                  setOverlayChildren(
-                    <div className="flex flex-col items-center gap-2">
-                      <select
-                        onChange={(e) => {
-                          setDeviceID(e.target.value);
-                          setRefreshCamera(true);
-
-                          setTimeout(() => {
-                            setRefreshCamera(false);
-                          }, 1000);
-                        }}
-                        value={deviceID!}
-                      >
-                        {devices?.map((device, index) => (
-                          <option key={index} value={device.deviceId}>
-                            {device.label || `Camera ${index + 1}`}
-                          </option>
-                        ))}
-                      </select>
-                      {refreshCamera && (
-                        <Webcam
-                          audio={false}
-                          ref={webcamRef}
-                          screenshotFormat="image/jpeg"
-                          videoConstraints={
-                            deviceID ? { deviceId: deviceID } : undefined
-                          }
-                          className="w-60 h-70 rounded-2xl object-cover object-center"
-                        />
-                      )}
-                      <PrimaryButton
-                        type="button"
-                        onClick={() => {
-                          if (webcamRef.current) {
-                            const imageSrc = webcamRef.current.getScreenshot();
-                            if (imageSrc) {
-                              fetch(imageSrc)
-                                .then((res) => res.blob())
-                                .then((blob) => {
-                                  const file = new File(
-                                    [blob],
-                                    "webcam_image.jpg",
-                                    { type: "image/jpeg" }
-                                  );
-                                  setImagePreview(URL.createObjectURL(file));
-                                  setValue("image", file, {
-                                    shouldValidate: true,
-                                  });
-                                  setOpen(false);
-                                });
-                            }
-                          }
-                        }}
-                      >
-                        Capture
-                      </PrimaryButton>
-                    </div>
-                  );
+                  setCameraOpen((prev) => {
+                    if (!prev) {
+                      setRefreshCamera(true);
+                      setTimeout(() => {
+                        setRefreshCamera(false);
+                      }, 2000);
+                    }
+                    return !prev;
+                  });
                 }}
                 className="flex gap-2 items-center justify-between max-w-fit"
               >
                 <FaCamera />
-                Camera
+                {t("camera")}
               </PrimaryButton>
+              {cameraOpen && (
+                <PrimaryButton
+                  type="button"
+                  onClick={() => {
+                    if (webcamRef.current) {
+                      const imageSrc = webcamRef.current.getScreenshot();
+                      if (imageSrc) {
+                        fetch(imageSrc)
+                          .then((res) => res.blob())
+                          .then((blob) => {
+                            const file = new File([blob], "webcam_image.jpg", {
+                              type: "image/jpeg",
+                            });
+                            setImagePreview(URL.createObjectURL(file));
+                            setValue("image", file, {
+                              shouldValidate: true,
+                            });
+                            setCameraOpen(false);
+                          });
+                      }
+                    }
+                  }}
+                >
+                  {t("capture")}
+                </PrimaryButton>
+              )}
             </div>
           </div>
           <PrimaryButton
@@ -571,7 +622,7 @@ const RegisterClient = () => {
             className="w-min"
             disabled={loading || checkingPhone || !!errors.phoneNumber}
           >
-            Register
+            {t("register")}
           </PrimaryButton>
         </>
       )}

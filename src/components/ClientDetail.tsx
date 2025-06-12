@@ -84,7 +84,7 @@ const ClientDetail = () => {
           onClick={() => navigate(-1)}
           className="flex justify-between items-center gap-3"
         >
-          <FaChevronLeft /> Back
+          <FaChevronLeft /> {t("back")}
         </PrimaryButton>
         <h1 className="text-3xl text-white font-bold">{t("clientDetail")}</h1>
         <PrimaryButton
@@ -92,7 +92,7 @@ const ClientDetail = () => {
             navigate(`/dashboard/register/${client}/material/${id}`)
           }
         >
-          Register Material
+          {t("registerMaterial")}
         </PrimaryButton>
       </div>
       <Container className="p-4 max-w-[500px]">
@@ -107,59 +107,59 @@ const ClientDetail = () => {
       </Container>
       <Container className="p-4 max-w-fit">
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Name:</p>
+          <p className="text-xl font-bold ">{t("name")}:</p>
           <p className="text-xl">{clientData?.name}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Age:</p>
+          <p className="text-xl font-bold ">{t("age")}:</p>
           <p className="text-xl">{clientData?.age}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Gender:</p>
+          <p className="text-xl font-bold ">{t("gender")}:</p>
           <p className="text-xl capitalize">{clientData?.gender}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Phone Number:</p>
+          <p className="text-xl font-bold ">{t("phoneNumber")}:</p>
           <p className="text-xl">{clientData?.phoneNumber}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">Subcity:</p>
+          <p className="text-xl font-bold ">{t("subcity")}:</p>
           <p className="text-xl">{clientData?.subcity}</p>
         </div>
         <div className="flex gap-2">
-          <p className="text-xl font-bold ">District:</p>
+          <p className="text-xl font-bold ">{t("district")}:</p>
           <p className="text-xl">{clientData?.district}</p>
         </div>
         {clientData?.clientType === ClientTypes.ADMINISTRATIVE_STAFF ? (
           <>
             <div className="flex gap-2">
-              <p className="text-xl font-bold ">Office:</p>
+              <p className="text-xl font-bold ">{t("office")}:</p>
               <p className="text-xl">{clientData?.office}</p>
             </div>
             <div className="flex gap-2">
-              <p className="text-xl font-bold ">Job Responsibility:</p>
+              <p className="text-xl font-bold ">{t("jobResonsibility")}:</p>
               <p className="text-xl">{clientData?.jobResponsibility}</p>
             </div>
           </>
         ) : clientData?.clientType === ClientTypes.TRAINER ? (
           <div className="flex gap-2">
-            <p className="text-xl font-bold ">Department:</p>
+            <p className="text-xl font-bold ">{t("department")}:</p>
             <p className="text-xl">{clientData?.department}</p>
           </div>
         ) : clientData?.clientType === ClientTypes.TRAINEE ? (
           <>
             <div className="flex gap-2">
-              <p className="text-xl font-bold ">Department:</p>
+              <p className="text-xl font-bold ">{t("department")}:</p>
               <p className="text-xl">{clientData?.department}</p>
             </div>{" "}
             <div className="flex gap-2">
-              <p className="text-xl font-bold ">Stream:</p>
+              <p className="text-xl font-bold ">{t("stream")}:</p>
               <p className="text-xl">{clientData?.stream}</p>
             </div>
           </>
         ) : (
           <div className="flex gap-2">
-            <p className="text-xl font-bold ">Office:</p>
+            <p className="text-xl font-bold ">{t("office")}:</p>
             <p className="text-xl">{clientData?.office}</p>
           </div>
         )}
@@ -167,13 +167,13 @@ const ClientDetail = () => {
       {clientData?.materials.length !== 0 ? (
         <Table
           headers={[
-            "No.",
-            "Brand",
-            "Model",
-            "Serial Number",
-            "Type",
-            "Ownership",
-            "Actions",
+            t("no"),
+            t("brand"),
+            t("model"),
+            t("serialNumber"),
+            t("type"),
+            t("ownership"),
+            t("actions"),
           ]}
           bodyData={clientData?.materials.map((material, index) => (
             <TableBodyRow key={index}>
@@ -237,12 +237,12 @@ const ClientDetail = () => {
                   <PrimaryLinkButton
                     link={`/dashboard/administrative-staff/edit/material/${material.material.id}`}
                   >
-                    Edit
+                    {t("edit")}
                   </PrimaryLinkButton>
                   <DangerButton
                     onClick={() => handleDelete(material.material.id)}
                   >
-                    Delete
+                    {t("delete")}
                   </DangerButton>
                 </div>
               </TableData>
@@ -251,7 +251,7 @@ const ClientDetail = () => {
         />
       ) : (
         <p className="text-3xl text-center">
-          There are no materials registered!
+          {t("notRegistered", { field: t("materialSm", { count: 2 }) })}
         </p>
       )}
     </div>
