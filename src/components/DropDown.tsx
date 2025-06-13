@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import Container from "./Container";
+import { useTranslation } from "react-i18next";
 
 type TextFieldProps = {
   id?: string;
@@ -16,6 +17,7 @@ const PrimaryDropDown = forwardRef<HTMLButtonElement, TextFieldProps>(
   ({ label, id, value, setValue, name, choices, onChange, onBlur }, ref) => {
     const [open, setOpen] = useState(false);
     const [displayText, setDisplayText] = useState("");
+    const { t } = useTranslation();
 
     const handleOpen = () => {
       setOpen(!open);
@@ -46,7 +48,9 @@ const PrimaryDropDown = forwardRef<HTMLButtonElement, TextFieldProps>(
             value={value!}
           >
             <span className="block w-11/12">
-              {displayText == "" ? `Select ${label}` : displayText}
+              {displayText == ""
+                ? `${t("select", { field: label })}`
+                : displayText}
             </span>
             <FaChevronDown
               className={

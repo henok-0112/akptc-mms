@@ -1,7 +1,7 @@
 import { Controller, useForm } from "react-hook-form";
 import { PrimaryTextField } from "./TextFields";
 import { PrimaryButton, RadioButton } from "./ui/Buttons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { ClientTypes, type UpdateClientForm } from "../types/client.type";
 import AdministrativeStaffController from "../controllers/administrativeStaffController";
@@ -14,7 +14,9 @@ import GuestController from "../controllers/guestController";
 import { useDebounce } from "use-debounce";
 import { ClipLoader } from "react-spinners";
 import { useNavigate, useParams } from "react-router";
-import { FaChevronLeft } from "react-icons/fa";
+import { FaCamera, FaChevronLeft } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
+import Webcam from "react-webcam";
 
 const EditClient = () => {
   const { id, client } = useParams();
@@ -28,6 +30,7 @@ const EditClient = () => {
     control,
     setError,
     clearErrors,
+    setValue,
     formState: { errors },
   } = useForm<UpdateClientForm>();
 
@@ -35,6 +38,7 @@ const EditClient = () => {
   const [clientType, setClientType] = useState<ClientTypes>(
     ClientTypes.ADMINISTRATIVE_STAFF
   );
+  const { t } = useTranslation();
   const [clientData, setClientData] = useState<UpdateClientForm>();
 
   const fetchClient = async () => {
@@ -111,14 +115,31 @@ const EditClient = () => {
         });
       }
     } catch (error) {
-      toast.error(<ErrorToast message="Can not find client." />);
+      toast.error(
+        <ErrorToast message={t("notFound", { field: t("client") })} />
+      );
       navigate(-1);
     }
   };
 
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const webcamRef = useRef<Webcam | null>(null);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>();
+  const [deviceID, setDeviceID] = useState<string | null>();
+
+  const [refreshCamera, setRefreshCamera] = useState(false);
+
+  const handleDevices = useCallback(
+    (mediaDevices: MediaDeviceInfo[]) =>
+      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    []
+  );
+
   useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(handleDevices);
+
     if (isNaN(Number(id))) {
-      toast.error(<ErrorToast message="Id is invalid" />);
+      toast.error(<ErrorToast message={t("isInteger")} />);
       navigate(-1);
     }
     if (client === "administrative-staff") {
@@ -140,7 +161,7 @@ const EditClient = () => {
     if (phoneExists) {
       setError("phoneNumber", {
         type: "manual",
-        message: "Phone number already exists.",
+        message: t("alreadyExists", { field: t("phoneNumber") }),
       });
       return;
     }
@@ -167,61 +188,69 @@ const EditClient = () => {
 
         if (response.status === 200) {
           toast.success(
-            <SuccessToast message="Administrative Staff updated successfully!" />
+            <SuccessToast
+              message={t("successUpdate", {
+                resource: t("adminsitrativeStaff"),
+              })}
+            />
           );
           navigate("/dashboard/administrative-staff");
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       } else if (clientType === ClientTypes.TRAINER) {
         const response = await TrainerController.update(Number(id), formData);
         console.log(formData.get("image"));
         if (response.status === 200) {
           toast.success(
-            <SuccessToast message="Trainer updated successfully!" />
+            <SuccessToast
+              message={t("successUpdate", {
+                resource: t("trainer"),
+              })}
+            />
           );
           navigate("/dashboard/trainer");
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       } else if (clientType === ClientTypes.TRAINEE) {
         const response = await TraineeController.update(Number(id), formData);
         if (response.status === 200) {
           toast.success(
-            <SuccessToast message="Trainee updated successfully!" />
+            <SuccessToast
+              message={t("successUpdate", {
+                resource: t("trainee"),
+              })}
+            />
           );
           navigate("/dashboard/trainee");
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       } else if (clientType === ClientTypes.GUEST) {
         const response = await GuestController.update(Number(id), formData);
         if (response.status === 200) {
-          toast.success(<SuccessToast message="Guest updated successfully!" />);
+          toast.success(
+            <SuccessToast
+              message={t("successUpdate", {
+                resource: t("guest"),
+              })}
+            />
+          );
           navigate("/dashboard/guest");
           reset();
         } else {
-          toast.error(
-            <ErrorToast message="Something went wrong, please try again" />
-          );
+          toast.error(<ErrorToast message={t("somethingWrong")} />);
         }
       }
 
       setLoading(false);
     } catch (error) {
       console.log(error);
-      toast.error(
-        <ErrorToast message="Something went wrong, please try again" />
-      );
+      toast.error(<ErrorToast message={t("somethingWrong")} />);
       setLoading(false);
     }
   };
@@ -255,7 +284,7 @@ const EditClient = () => {
         ) {
           setError("phoneNumber", {
             type: "manual",
-            message: "Phone number already exists.",
+            message: t("alreadyExists", { field: t("phoneNumber") }),
           });
           setPhoneExists(true);
         } else {
@@ -285,30 +314,32 @@ const EditClient = () => {
             type="button"
             className="w-fit flex justify-center items-center gap-2"
           >
-            <FaChevronLeft /> Back
+            <FaChevronLeft /> {t("back")}
           </PrimaryButton>
           <div className="flex w-full  items-center gap-3">
             <div className="flex-1 ">
               <PrimaryTextField
-                placeholder="Enter full name here....."
+                placeholder={t("input", { field: t("fullNameSm") })}
                 id="name"
-                label="Full Name"
-                {...register("name", { required: "Full Name is Required." })}
+                label={t("fullName")}
+                {...register("name", {
+                  required: t("isRequired", { field: t("fullName") }),
+                })}
                 type="text"
               />
               {errors.name && (
                 <p className="text-red-500 ml-2">{errors.name.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter age here....."
+                placeholder={t("input", { field: t("ageSm") })}
                 id="age"
-                label="Age"
+                label={t("age")}
                 {...register("age", {
-                  required: "Age is Required.",
+                  required: t("isRequired", { field: t("age") }),
                   validate: {
                     isInteger: (value) =>
                       Number.isInteger(Number(value)) ||
-                      "Age must be an integer.",
+                      t("isInteger", { field: t("age") }),
                   },
                 })}
                 type="number"
@@ -317,19 +348,23 @@ const EditClient = () => {
                 <p className="text-red-500 ml-2">{errors.age.message}</p>
               )}
               <label className=" font-bold text-xl ml-5 text-white">
-                Gender
+                {t("gender")}
               </label>
               <div className="flex justify-around">
                 <RadioButton
                   id="male"
-                  {...register("gender", { required: "Gender is Required." })}
-                  label="Male"
+                  {...register("gender", {
+                    required: t("isRequired", { field: t("gender") }),
+                  })}
+                  label={t("male")}
                   value="male"
                 />
                 <RadioButton
                   id="female"
-                  {...register("gender", { required: "Gender is Required." })}
-                  label="Female"
+                  {...register("gender", {
+                    required: t("isRequired", { field: t("gender") }),
+                  })}
+                  label={t("female")}
                   value="female"
                 />
               </div>
@@ -337,16 +372,18 @@ const EditClient = () => {
                 <p className="text-red-500 ml-2">{errors.gender.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter phone number here....."
+                placeholder={t("input", { field: t("phoneNumberSm") })}
                 id="phoneNumber"
-                label="Phone Number"
+                label={t("phoneNumber")}
                 {...register("phoneNumber", {
-                  required: "Phone Number is Required.",
+                  required: t("alreadyExists", { field: t("phoneNumber") }),
                   validate: {
-                    exists: () => !phoneExists || "Phonenumber already exists.",
+                    exists: () =>
+                      !phoneExists ||
+                      t("alreadyExists", { field: t("phoneNumber") }),
                     isInteger: (value) =>
                       Number.isInteger(Number(value)) ||
-                      "Phonenumber must be an integer.",
+                      t("isInteger", { field: t("phoneNumber") }),
                   },
                 })}
                 type="number"
@@ -360,20 +397,24 @@ const EditClient = () => {
                 </p>
               )}
               <PrimaryTextField
-                placeholder="Enter subcity here....."
+                placeholder={t("input", { field: t("subcitySm") })}
                 id="subcity"
-                label="Subcity"
-                {...register("subcity", { required: "Subcity is Required." })}
+                label={t("subcity")}
+                {...register("subcity", {
+                  required: t("isRequired", { field: t("subcity") }),
+                })}
                 type="text"
               />
               {errors.subcity && (
                 <p className="text-red-500 ml-2">{errors.subcity.message}</p>
               )}
               <PrimaryTextField
-                placeholder="Enter district here....."
+                placeholder={t("input", { field: t("districtSm") })}
                 id="district"
-                label="District"
-                {...register("district", { required: "District is Required." })}
+                label={t("district")}
+                {...register("district", {
+                  required: t("isRequired", { field: t("district") }),
+                })}
                 type="text"
               />
               {errors.district && (
@@ -382,21 +423,27 @@ const EditClient = () => {
               {clientType === ClientTypes.ADMINISTRATIVE_STAFF ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter office here....."
+                    placeholder={t("input", { field: t("officeSm") })}
                     id="office"
-                    label="Office"
-                    {...register("office", { required: "Office is Required." })}
+                    label={t("office")}
+                    {...register("office", {
+                      required: t("isRequired", { field: t("office") }),
+                    })}
                     type="text"
                   />
                   {"office" in errors && errors.office && (
                     <p className="text-red-500 ml-2">{errors.office.message}</p>
                   )}
                   <PrimaryTextField
-                    placeholder="Enter job responsibility here....."
+                    placeholder={t("input", {
+                      field: t("jobResponsibilitySm"),
+                    })}
                     id="jobResponsibility"
-                    label="Job Responsibility"
+                    label={t("jobResponsibility")}
                     {...register("jobResponsibility", {
-                      required: "Job Responsibility is Required.",
+                      required: t("isRequired", {
+                        field: t("jobReponsibility"),
+                      }),
                     })}
                     type="text"
                   />
@@ -410,11 +457,11 @@ const EditClient = () => {
               ) : clientType === ClientTypes.TRAINER ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter department here....."
+                    placeholder={t("input", { field: t("departmentSm") })}
                     id="department"
-                    label="Department"
+                    label={t("department")}
                     {...register("department", {
-                      required: "Department is Required.",
+                      required: t("isRequired", { field: t("department") }),
                     })}
                     type="text"
                   />
@@ -427,11 +474,11 @@ const EditClient = () => {
               ) : clientType === ClientTypes.TRAINEE ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter department here....."
+                    placeholder={t("input", { field: t("departmentSm") })}
                     id="department"
-                    label="Department"
+                    label={t("department")}
                     {...register("department", {
-                      required: "Department is Required.",
+                      required: t("isRequired", { field: t("department") }),
                     })}
                     type="text"
                   />
@@ -441,10 +488,12 @@ const EditClient = () => {
                     </p>
                   )}
                   <PrimaryTextField
-                    placeholder="Enter stream here....."
+                    placeholder={t("input", { field: t("streamSm") })}
                     id="stream"
-                    label="Stream"
-                    {...register("stream", { required: "Stream is Required." })}
+                    label={t("stream")}
+                    {...register("stream", {
+                      required: t("isRequired", { field: t("stream") }),
+                    })}
                     type="text"
                   />
                   {"stream" in errors && errors.stream && (
@@ -454,10 +503,12 @@ const EditClient = () => {
               ) : clientType === ClientTypes.GUEST ? (
                 <>
                   <PrimaryTextField
-                    placeholder="Enter office here....."
+                    placeholder={t("input", { field: t("officeSm") })}
                     id="office"
-                    label="Office"
-                    {...register("office", { required: "Office is Required." })}
+                    label={t("office")}
+                    {...register("office", {
+                      required: t("isRequired", { field: t("office") }),
+                    })}
                     type="text"
                   />
                   {"office" in errors && errors.office && (
@@ -468,8 +519,29 @@ const EditClient = () => {
                 ""
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-white text-2xl font-bold">Client Image</p>
+            <div className="flex flex-col gap-2 items-center">
+              <p className="text-white text-2xl font-bold">
+                {t("clientImage")}
+              </p>
+              {cameraOpen && (
+                <select
+                  onChange={(e) => {
+                    setDeviceID(e.target.value);
+                    setRefreshCamera(true);
+
+                    setTimeout(() => {
+                      setRefreshCamera(false);
+                    }, 1000);
+                  }}
+                  value={deviceID!}
+                >
+                  {devices?.map((device, index) => (
+                    <option key={index} value={device.deviceId}>
+                      {device.label || `Camera ${index + 1}`}
+                    </option>
+                  ))}
+                </select>
+              )}
               <Controller
                 name="image"
                 control={control}
@@ -511,7 +583,21 @@ const EditClient = () => {
                         onBlur={field.onBlur}
                         type="file"
                       />
-                      {imagePreview !== "" ? (
+                      {cameraOpen ? (
+                        refreshCamera ? (
+                          <Loader />
+                        ) : (
+                          <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={
+                              deviceID ? { deviceId: deviceID } : undefined
+                            }
+                            className="w-full h-full rounded-2xl object-cover object-center"
+                          />
+                        )
+                      ) : imagePreview !== "" ? (
                         <img
                           src={imagePreview}
                           className="w-full h-full rounded-xl object-cover object-center"
@@ -521,16 +607,16 @@ const EditClient = () => {
                           {isDragActive ? (
                             isDragReject ? (
                               <p className="text-xl text-center font-bold">
-                                Drop files here.....
+                                {t("dropImage")}
                               </p>
                             ) : (
                               <p className="text-xl text-center font-bold">
-                                Drop files here.....
+                                {t("dropImage")}
                               </p>
                             )
                           ) : (
                             <p className="text-xl text-center font-bold">
-                              Drag and Drop files here.....
+                              {t("dragAndDrop")}
                             </p>
                           )}
                         </>
@@ -542,6 +628,51 @@ const EditClient = () => {
               {errors.image && (
                 <p className="text-red-500 ml-2">{errors.image.message}</p>
               )}
+              <PrimaryButton
+                type="button"
+                onClick={() => {
+                  navigator.mediaDevices.enumerateDevices().then(handleDevices);
+                  setCameraOpen((prev) => {
+                    if (!prev) {
+                      setRefreshCamera(true);
+                      setTimeout(() => {
+                        setRefreshCamera(false);
+                      }, 2000);
+                    }
+                    return !prev;
+                  });
+                }}
+                className="flex gap-2 items-center justify-between max-w-fit"
+              >
+                <FaCamera />
+                {t("camera")}
+              </PrimaryButton>
+              {cameraOpen && (
+                <PrimaryButton
+                  type="button"
+                  onClick={() => {
+                    if (webcamRef.current) {
+                      const imageSrc = webcamRef.current.getScreenshot();
+                      if (imageSrc) {
+                        fetch(imageSrc)
+                          .then((res) => res.blob())
+                          .then((blob) => {
+                            const file = new File([blob], "webcam_image.jpg", {
+                              type: "image/jpeg",
+                            });
+                            setImagePreview(URL.createObjectURL(file));
+                            setValue("image", file, {
+                              shouldValidate: true,
+                            });
+                            setCameraOpen(false);
+                          });
+                      }
+                    }
+                  }}
+                >
+                  {t("capture")}
+                </PrimaryButton>
+              )}
             </div>
           </div>
           <PrimaryButton
@@ -549,7 +680,7 @@ const EditClient = () => {
             className="w-min"
             disabled={loading || checkingPhone || !!errors.phoneNumber}
           >
-            Update
+            {t("update")}
           </PrimaryButton>
         </>
       )}

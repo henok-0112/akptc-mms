@@ -17,7 +17,7 @@ import GuestController from "../controllers/guestController";
 import { useTranslation } from "react-i18next";
 import Webcam from "react-webcam";
 
-const RegisterMaterial = () => {
+const RegisterGuard = () => {
   const {
     register,
     reset,
@@ -430,4 +430,4 @@ const RegisterMaterial = () => {
   );
 };
 
-export default RegisterMaterial;
+export default RegisterGuard;

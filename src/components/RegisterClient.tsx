@@ -548,11 +548,11 @@ const RegisterClient = () => {
                           {isDragActive ? (
                             isDragReject ? (
                               <p className="text-xl text-center font-bold">
-                                {t("drapImage")}
+                                {t("dropImage")}
                               </p>
                             ) : (
                               <p className="text-xl text-center font-bold">
-                                {t("drapImage")}
+                                {t("dropImage")}
                               </p>
                             )
                           ) : (

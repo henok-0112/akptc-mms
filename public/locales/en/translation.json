@@ -86,6 +86,12 @@
   "camera": "Camera",
   "capture": "Capture",
   "register": "Register",
+  "update": "Update",
+  "guard": "Guard",
+  "guardSm": "guard",
+  "guard_plural": "Guards",
+  "guardSm_plural": "guards",
+  "registerGuard": "Regsiter Guard",
   "male": "Male",
   "female": "Female",
   "edit": "Edit",
@@ -103,11 +109,13 @@
   "isInteger": "{{field}} must be a number",
   "successDelete": "{{resource}} deleted successfully!",
   "successRegister": "{{resource}} registered successfully!",
+  "successUpdate": "{{resource}} updated successfully!",
   "somethingWrong": "Something went wrong, please try again!",
   "invalidCredentials": "Invalid Credentials!",
   "loginSuccess": "Login Successfull!",
   "networkError": "Network error please try again!",
   "notFound": "Can not found {{field}}",
   "back": "Back",
-  "alreadyExists": "{{field}} already exists."
+  "alreadyExists": "{{field}} already exists.",
+  "close": "Close"
 }

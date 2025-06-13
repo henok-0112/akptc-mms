@@ -86,6 +86,12 @@
   "camera": "Kaameeraa",
   "capture": "Suuraa Kaasi",
   "register": "Galmeessuu",
+  "update": "Odeeffannoo dhiyeenyaa",
+  "guard": "Eegduu",
+  "guardSm": "Eegduu",
+  "guard_plural": "Eegdota",
+  "guardSm_plural": "Eegdota",
+  "registerGuard": "Eegdota Galmeessi",
   "male": "Dhiira",
   "female": "Dubartii",
   "edit": "Sirreessi",
@@ -103,11 +109,13 @@
   "isInteger": "{{field}} lakkoofsa guutuu ta’uu qaba.",
   "successDelete": "{{resource}} milkaa'inaan haqamee jira!",
   "successRegister": "{{resource}} milkaa'inaan galmaa'eera!",
+  "successUpdate": "{{resource}} milkaa'inaan haaromfame!",
   "somethingWrong": "Dogoggorri tokko mul'ate, irra deebi'ii yaali!",
   "invalidCredentials": "Odeeffannoon galmee sirrii miti!",
   "loginSuccess": "Seenuun milkaa'eera!",
   "networkError": "Dogoggora networki, irra deebi'ii yaali!",
   "notFound": "{{field}} argachuu hin dandeenye",
   "back": "Dugda",
-  "alreadyExists": "{{field}} duraanuu jira."
+  "alreadyExists": "{{field}} duraanuu jira.",
+  "close": "Cufuu"
 }

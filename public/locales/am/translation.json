@@ -86,6 +86,12 @@
   "camera": "ካሜራ",
   "capture": "አንሳ",
   "register": "መዝግብ",
+  "update": "አዘምን",
+  "guard": "ጥበቃ",
+  "guardSm": "ጥበቃ",
+  "guard_plural": "ጥበቃዎች",
+  "guardSm_plural": "ጥበቃዎች",
+  "registerGuard": "ጥበቃ ይመዝግቡ",
   "male": "ወንድ",
   "female": "ሴት",
   "edit": "አስተካክል",
@@ -103,11 +109,13 @@
   "isInteger": "{{field}} ቁጥር መሆን አለበት።",
   "successDelete": "{{resource}} በተሳካ ሁኔታ ተሰርዟል!",
   "successRegister": "{{resource}} በተሳካ ሁኔታ ተመዝግቧል!",
+  "successUpdate": "{{resource}} በተሳካ ሁኔታ ዘምኗል!",
   "somethingWrong": "ያልታወቀ ስህተት ተከስቷል፣ እባክዎ እንደገና ይሞክሩ!",
   "invalidCredentials": "የተሳሳተ መረጃ!",
   "loginSuccess": "በተሳካ ሁኔታ ገብተዋል!",
   "networkError": "የኔትዎርክ ችግር ተከስቷል፣ እባክዎ እንደገና ይሞክሩ!",
   "notFound": "ተጠቃሚውን ማግኘት አልቻለም",
   "back": "ተመለስ",
-  "alreadyExists": "{{field}} አስቀድሞ አለ።"
+  "alreadyExists": "{{field}} አስቀድሞ አለ።",
+  "close": "ዝጋ"
 }

@@ -137,7 +137,7 @@ const ClientDetail = () => {
               <p className="text-xl">{clientData?.office}</p>
             </div>
             <div className="flex gap-2">
-              <p className="text-xl font-bold ">{t("jobResonsibility")}:</p>
+              <p className="text-xl font-bold ">{t("jobResponsibility")}:</p>
               <p className="text-xl">{clientData?.jobResponsibility}</p>
             </div>
           </>

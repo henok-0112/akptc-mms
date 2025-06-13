@@ -7,6 +7,7 @@ import {
   FaLanguage,
   FaTimes,
   FaUser,
+  FaUserLock,
   FaUserPlus,
 } from "react-icons/fa";
 import Logo from "../assets/logo.png";
@@ -128,11 +129,25 @@ const Dashboard: React.FC<PropsWithChildren> = () => {
           <FaIdBadge size={25} /> <span>{t("client")}</span>
         </DropdownLinkButton>
         <PrimaryLinkButton
+          link="/dashboard/guards"
+          className="flex gap-4 justify-evenly items-center"
+        >
+          <FaUserLock size={25} />{" "}
+          <span className="flex-1 text-center">{t("guard", { count: 2 })}</span>
+        </PrimaryLinkButton>
+        <PrimaryLinkButton
           link="/dashboard/register"
           className="flex gap-4 justify-evenly items-center"
         >
           <FaUserPlus size={25} />{" "}
           <span className="flex-1 text-center">{t("registerClient")}</span>
+        </PrimaryLinkButton>
+        <PrimaryLinkButton
+          link="/dashboard/guards/register"
+          className="flex gap-4 justify-evenly items-center"
+        >
+          <FaUserPlus size={25} />{" "}
+          <span className="flex-1 text-center">{t("registerGuard")}</span>
         </PrimaryLinkButton>
         {/* <PrimaryLinkButton
           link="/dashboard/register"
