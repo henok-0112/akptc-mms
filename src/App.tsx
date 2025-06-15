@@ -16,6 +16,9 @@ import EditMaterial from "./components/EditMaterial";
 import TrainerDashboard from "./components/TrainerDashboard";
 import TraineeDashboard from "./components/TraineeDashboard";
 import GuestDashboard from "./components/GuestDashboard";
+import GuardsDashboard from "./components/GuardsDashboard";
+import EditGuard from "./components/EditGuard";
+import RegisterGuard from "./components/RegisterGuard";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,6 +54,9 @@ function App() {
               <Route path="trainer" element={<TrainerDashboard />} />
               <Route path="trainee" element={<TraineeDashboard />} />
               <Route path="guest" element={<GuestDashboard />} />
+              <Route path="guard" element={<GuardsDashboard />} />
+              <Route path="guard/edit/:id" element={<EditGuard />} />
+              <Route path="guard/register" element={<RegisterGuard />} />
               <Route path=":client/detail/:id" element={<ClientDetail />} />
               <Route
                 path=":client/material/detail/:id"

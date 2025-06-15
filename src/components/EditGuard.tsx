@@ -18,7 +18,7 @@ import { FaChevronLeft } from "react-icons/fa";
 import MaterialController from "../controllers/materialController";
 import { useTranslation } from "react-i18next";
 
-const EditMaterial = () => {
+const EditGuard = () => {
   const {
     register,
     reset,
@@ -218,4 +218,4 @@ const EditMaterial = () => {
   );
 };
 
-export default EditMaterial;
+export default EditGuard;
